@@ -19,12 +19,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
   && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Copy pyproject.toml + backend source so setuptools can find the package
 COPY pyproject.toml ./
+COPY backend/ ./backend/
 RUN pip install --no-cache-dir .
 
-# Copy application source
-COPY backend/app ./app
+# Copy alembic (env.py uses sys.path insertion pointing to /app/backend/)
 COPY alembic ./alembic
 COPY alembic.ini ./
 
@@ -33,6 +33,9 @@ COPY --from=frontend-builder /frontend/dist ./frontend/dist
 
 # Data directory (override via volume mount)
 ENV DELMO_DATA_DIR=/data
+# Tell main.py where the built SPA lives (absolute path inside this image)
+ENV DELMO_FRONTEND_DIR=/app/frontend/dist
+
 RUN mkdir -p /data
 
 EXPOSE 8000

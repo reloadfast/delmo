@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -9,14 +10,23 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.connection import router as connection_router
+from app.api.logs import router as logs_router
+from app.api.rules import router as rules_router
 from app.api.settings import router as settings_router
 from app.api.torrents import router as torrents_router
 from app.core.database import init_db, seed_defaults
+from app.services.scheduler import start_scheduler, stop_scheduler
 
 logger = logging.getLogger(__name__)
 
-# Built React SPA lives here after `npm run build`
-_STATIC_DIR = Path(__file__).parent.parent.parent / "frontend" / "dist"
+# Built React SPA location — configurable via DELMO_FRONTEND_DIR env var
+# (set in Docker image); falls back to the dev-tree relative path.
+_frontend_env = os.environ.get("DELMO_FRONTEND_DIR", "")
+_STATIC_DIR = (
+    Path(_frontend_env)
+    if _frontend_env
+    else Path(__file__).parent.parent.parent / "frontend" / "dist"
+)
 
 
 @asynccontextmanager
@@ -25,7 +35,9 @@ async def lifespan(app: FastAPI) -> Any:
     await init_db()
     await seed_defaults()
     logger.info("Database ready.")
+    start_scheduler()
     yield
+    stop_scheduler()
     logger.info("Shutting down delmo.")
 
 
@@ -47,6 +59,8 @@ app.add_middleware(
 app.include_router(settings_router, prefix="/api")
 app.include_router(connection_router, prefix="/api")
 app.include_router(torrents_router, prefix="/api")
+app.include_router(rules_router, prefix="/api")
+app.include_router(logs_router, prefix="/api")
 
 
 @app.get("/api/health", tags=["meta"])
