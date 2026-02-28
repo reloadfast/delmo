@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { api, dashboardApi, logsApi, rulesApi, settingsApi } from "./api";
+import {
+  api,
+  connectionApi,
+  dashboardApi,
+  logsApi,
+  rulesApi,
+  schedulerApi,
+  settingsApi,
+} from "./api";
 
 // Stub global fetch
 const fetchMock = vi.fn();
@@ -169,5 +177,23 @@ describe("logsApi", () => {
     mockOk([]);
     await logsApi.list(50, 100);
     expect(fetchMock.mock.calls[0][0]).toBe("/api/logs?limit=50&offset=100");
+  });
+});
+
+describe("connectionApi", () => {
+  it("test posts to /api/connection/test", async () => {
+    mockOk({ connected: true, daemon_version: "2.1.0", error: null });
+    await connectionApi.test({ host: "127.0.0.1", port: 58846, username: "", password: "" });
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/connection/test");
+    expect(fetchMock.mock.calls[0][1].method).toBe("POST");
+  });
+});
+
+describe("schedulerApi", () => {
+  it("runNow posts to /api/scheduler/run-now", async () => {
+    mockOk({ status: "triggered" });
+    await schedulerApi.runNow();
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/scheduler/run-now");
+    expect(fetchMock.mock.calls[0][1].method).toBe("POST");
   });
 });

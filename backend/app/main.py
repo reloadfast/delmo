@@ -13,6 +13,7 @@ from app.api.connection import router as connection_router
 from app.api.dashboard import router as dashboard_router
 from app.api.logs import router as logs_router
 from app.api.rules import router as rules_router
+from app.api.scheduler import router as scheduler_router
 from app.api.settings import router as settings_router
 from app.api.torrents import router as torrents_router
 from app.api.ws import router as ws_router
@@ -65,6 +66,7 @@ app.include_router(rules_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
 app.include_router(ws_router, prefix="/api")
+app.include_router(scheduler_router, prefix="/api")
 
 
 @app.get("/api/health", tags=["meta"])
