@@ -69,5 +69,5 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["app"]
+source_pkgs = ["app"]
 omit = ["*/tests/*", "*/alembic/*"]
