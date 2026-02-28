@@ -89,24 +89,6 @@ function ConnectionCard({ settings }: { settings: Record<string, string> }) {
     };
   }
 
-  async function handleTest() {
-    setTesting(true);
-    setTestStatus(null);
-    try {
-      const result = await connectionApi.test({
-        host: form.host,
-        port: Number(form.port) || 58846,
-        username: form.username,
-        password: form.password,
-      });
-      setTestStatus(result);
-    } catch {
-      setTestStatus({ connected: false, daemon_version: null, error: "Request failed." });
-    } finally {
-      setTesting(false);
-    }
-  }
-
   const saveMutation = useMutation({
     mutationFn: () =>
       settingsApi.patch({
@@ -121,6 +103,30 @@ function ConnectionCard({ settings }: { settings: Record<string, string> }) {
       setSaved(true);
     },
   });
+
+  // Test connection and auto-save on success so the user doesn't need
+  // a separate "Save" click (the most common source of confusion).
+  async function handleTestAndSave() {
+    setTesting(true);
+    setTestStatus(null);
+    setSaved(false);
+    try {
+      const result = await connectionApi.test({
+        host: form.host,
+        port: Number(form.port) || 58846,
+        username: form.username,
+        password: form.password,
+      });
+      setTestStatus(result);
+      if (result.connected) {
+        saveMutation.mutate();
+      }
+    } catch {
+      setTestStatus({ connected: false, daemon_version: null, error: "Request failed." });
+    } finally {
+      setTesting(false);
+    }
+  }
 
   return (
     <Card>
@@ -162,15 +168,16 @@ function ConnectionCard({ settings }: { settings: Record<string, string> }) {
           </Field>
         </div>
 
-        {/* Test + result row */}
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Test & Save row — single action: test first, save on success */}
+        <div className="flex flex-wrap items-center gap-3 pt-1">
           <button
-            onClick={handleTest}
-            disabled={testing || !form.host}
-            className="px-4 py-2 rounded-lg text-sm font-medium border border-border text-text-primary hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            onClick={handleTestAndSave}
+            disabled={testing || saveMutation.isPending || !form.host}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-accent text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
           >
-            {testing ? "Testing…" : "Test Connection"}
+            {testing ? "Testing…" : saveMutation.isPending ? "Saving…" : "Test & Save"}
           </button>
+
           {testStatus && (
             <span className="flex items-center gap-2 text-sm">
               <Badge variant={testStatus.connected ? "positive" : "danger"}>
@@ -183,18 +190,8 @@ function ConnectionCard({ settings }: { settings: Record<string, string> }) {
               </span>
             </span>
           )}
-        </div>
 
-        {/* Save row */}
-        <div className="flex items-center gap-3 pt-1">
-          <button
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-accent text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
-          >
-            {saveMutation.isPending ? "Saving…" : "Save Credentials"}
-          </button>
-          {saved && !saveMutation.isPending && (
+          {saved && !saveMutation.isPending && testStatus?.connected && (
             <span className="text-xs text-accent-positive">Saved.</span>
           )}
           {saveMutation.isError && <span className="text-xs text-accent-danger">Save failed.</span>}
