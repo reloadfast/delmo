@@ -18,6 +18,7 @@ export default mergeConfig(
         },
         exclude: [
           "node_modules/",
+          "dist/**",
           "src/test-setup.ts",
           "src/main.tsx",
           "src/App.tsx",
