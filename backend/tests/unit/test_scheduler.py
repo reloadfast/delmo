@@ -39,10 +39,11 @@ def test_get_interval_minimum_enforced() -> None:
 
 # ---------------------------------------------------------------------------
 # start / stop / reschedule
+# AsyncIOScheduler.start() requires a running event loop, so these must be async.
 # ---------------------------------------------------------------------------
 
 
-def test_start_stop_scheduler() -> None:
+async def test_start_stop_scheduler() -> None:
     # Ensure clean state
     sched_module._scheduler = None
     start_scheduler()
@@ -51,7 +52,7 @@ def test_start_stop_scheduler() -> None:
     assert sched_module._scheduler is None
 
 
-def test_start_scheduler_idempotent() -> None:
+async def test_start_scheduler_idempotent() -> None:
     sched_module._scheduler = None
     start_scheduler()
     first = sched_module._scheduler
@@ -71,7 +72,7 @@ def test_reschedule_noop_when_not_running() -> None:
     reschedule(60)  # should not raise
 
 
-def test_reschedule_when_running() -> None:
+async def test_reschedule_when_running() -> None:
     sched_module._scheduler = None
     start_scheduler()
     reschedule(120)  # should not raise
