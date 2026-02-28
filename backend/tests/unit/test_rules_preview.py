@@ -33,7 +33,7 @@ def _make_torrent(
 
 
 async def _seed(db: AsyncSession, key: str, value: str) -> None:
-    """Upsert a setting so repeated seeding across tests never violates the unique key."""
+    """Upsert a setting so repeated seeding never violates the unique key."""
     stmt = (
         sqlite_insert(Setting)
         .values(key=key, value=value)

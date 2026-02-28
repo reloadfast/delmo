@@ -1,7 +1,7 @@
 """Unit tests for the dashboard stats endpoint."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -68,7 +68,7 @@ async def test_dashboard_deluge_unreachable(
 async def test_dashboard_moves_today_counted(
     client: AsyncClient, db: AsyncSession
 ) -> None:
-    today = datetime.now(tz=timezone.utc)
+    today = datetime.now(tz=UTC)
     db.add(
         MoveLog(
             torrent_hash="h1",

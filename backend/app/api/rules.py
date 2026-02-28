@@ -161,7 +161,7 @@ async def delete_rule(
 async def preview_eval(
     body: PreviewEvalRequest, db: AsyncSession = Depends(get_db)
 ) -> PreviewResponse:
-    """Evaluate ad-hoc conditions against live Deluge torrents (no saved rule required)."""
+    """Evaluate ad-hoc conditions against live Deluge torrents."""
     settings = await _settings_dict(db)
     torrents = await _connect_and_get_torrents(settings)
 
