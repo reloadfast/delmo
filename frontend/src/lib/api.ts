@@ -33,6 +33,32 @@ export const settingsApi = {
   patch: (updates: Record<string, string>) => api.patch<SettingsData>("/api/settings", { updates }),
 };
 
+// ── Connection ────────────────────────────────────────────────────────────────
+
+export interface ConnectionStatus {
+  connected: boolean;
+  daemon_version: string | null;
+  error: string | null;
+}
+
+export interface ConnectionTestPayload {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+}
+
+export const connectionApi = {
+  test: (payload: ConnectionTestPayload) =>
+    api.post<ConnectionStatus>("/api/connection/test", payload),
+};
+
+// ── Scheduler ─────────────────────────────────────────────────────────────────
+
+export const schedulerApi = {
+  runNow: () => api.post<{ status: string }>("/api/scheduler/run-now"),
+};
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
 export interface DashboardStats {

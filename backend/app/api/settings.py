@@ -35,4 +35,14 @@ async def patch_settings(
         )
         await db.execute(stmt)
     await db.commit()
+
+    # Update scheduler interval at runtime if it was changed
+    if "polling_interval_seconds" in payload.updates:
+        try:
+            from app.services.scheduler import reschedule
+
+            reschedule(int(payload.updates["polling_interval_seconds"]))
+        except (ValueError, RuntimeError):
+            pass  # Invalid value or scheduler not running — ignore
+
     return SettingsResponse(data=await _all_settings(db))
