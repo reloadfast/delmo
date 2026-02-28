@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -18,8 +19,14 @@ from app.services.scheduler import start_scheduler, stop_scheduler
 
 logger = logging.getLogger(__name__)
 
-# Built React SPA lives here after `npm run build`
-_STATIC_DIR = Path(__file__).parent.parent.parent / "frontend" / "dist"
+# Built React SPA location — configurable via DELMO_FRONTEND_DIR env var
+# (set in Docker image); falls back to the dev-tree relative path.
+_frontend_env = os.environ.get("DELMO_FRONTEND_DIR", "")
+_STATIC_DIR = (
+    Path(_frontend_env)
+    if _frontend_env
+    else Path(__file__).parent.parent.parent / "frontend" / "dist"
+)
 
 
 @asynccontextmanager
