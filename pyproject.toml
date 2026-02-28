@@ -60,14 +60,15 @@ exclude = ["alembic/"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 pythonpath = ["backend"]
 testpaths = ["backend/tests"]
-addopts = "--cov=app --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=backend/app --cov-report=term-missing --cov-fail-under=80"
 markers = [
     "unit: unit tests (fast, no I/O)",
     "integration: integration tests (uses DB or external services)",
 ]
 
 [tool.coverage.run]
-source = ["app"]
+source = ["backend/app"]
 omit = ["*/tests/*", "*/alembic/*"]

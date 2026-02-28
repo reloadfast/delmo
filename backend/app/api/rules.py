@@ -1,6 +1,7 @@
 """Rules CRUD API."""
 from __future__ import annotations
 
+import asyncio
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -9,10 +10,59 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.rule import Rule, RuleCondition
-from app.schemas.rule import RuleCreate, RulePatch, RuleSchema
+from app.models.setting import Setting
+from app.schemas.rule import (
+    PreviewEvalRequest,
+    PreviewResponse,
+    PreviewTorrent,
+    RuleCreate,
+    RulePatch,
+    RuleSchema,
+)
+from app.services.deluge import DelugeClient
+from app.services.engine import evaluate_rule
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/rules", tags=["rules"])
+
+_RPC_TIMEOUT = 5.0
+
+
+async def _settings_dict(db: AsyncSession) -> dict[str, str]:
+    result = await db.execute(select(Setting))
+    return {s.key: s.value for s in result.scalars().all()}
+
+
+async def _connect_and_get_torrents(settings: dict[str, str]) -> list:  # type: ignore[type-arg]
+    host = settings.get("deluge_host", "")
+    if not host:
+        raise HTTPException(status_code=503, detail="Deluge host not configured.")
+    port_str = settings.get("deluge_port", "58846")
+    try:
+        port = int(port_str)
+    except ValueError as err:
+        raise HTTPException(
+            status_code=503, detail=f"Invalid port: {port_str!r}"
+        ) from err
+    client = DelugeClient(
+        host=host,
+        port=port,
+        username=settings.get("deluge_username", ""),
+        password=settings.get("deluge_password", ""),
+    )
+    try:
+        await asyncio.wait_for(client.connect(), timeout=_RPC_TIMEOUT)
+        torrents = await client.get_torrents()
+        await client.disconnect()
+        return torrents
+    except HTTPException:
+        raise
+    except Exception as exc:
+        msg = str(exc)
+        password = settings.get("deluge_password", "")
+        if password:
+            msg = msg.replace(password, "***")
+        raise HTTPException(status_code=503, detail=msg) from exc
 
 
 def _rule_to_schema(rule: Rule) -> RuleSchema:
@@ -100,3 +150,48 @@ async def delete_rule(
     await db.delete(rule)
     await db.commit()
     logger.info("Deleted rule %s", rule_id)
+
+
+# ── Preview endpoints ────────────────────────────────────────────────────────
+# POST /rules/preview must be defined before GET /rules/{rule_id}/preview
+# to prevent "preview" being parsed as a rule_id.
+
+
+@router.post("/preview", response_model=PreviewResponse)
+async def preview_eval(
+    body: PreviewEvalRequest, db: AsyncSession = Depends(get_db)
+) -> PreviewResponse:
+    """Evaluate ad-hoc conditions against live Deluge torrents."""
+    settings = await _settings_dict(db)
+    torrents = await _connect_and_get_torrents(settings)
+
+    # Build a temporary in-memory rule to reuse evaluate_rule()
+    temp_rule = Rule(id=0, name="", priority=0, enabled=True, destination="")
+    temp_rule.conditions = [
+        RuleCondition(condition_type=c.condition_type, value=c.value)
+        for c in body.conditions
+    ]
+
+    matched = [
+        PreviewTorrent(hash=t.hash, name=t.name, save_path=t.save_path)
+        for t in torrents
+        if evaluate_rule(temp_rule, t)
+    ]
+    return PreviewResponse(total_torrents=len(torrents), matched=matched)
+
+
+@router.get("/{rule_id}/preview", response_model=PreviewResponse)
+async def preview_rule(
+    rule_id: int, db: AsyncSession = Depends(get_db)
+) -> PreviewResponse:
+    """Preview which live torrents the saved rule would match."""
+    rule = await _get_rule_or_404(rule_id, db)
+    settings = await _settings_dict(db)
+    torrents = await _connect_and_get_torrents(settings)
+
+    matched = [
+        PreviewTorrent(hash=t.hash, name=t.name, save_path=t.save_path)
+        for t in torrents
+        if t.save_path != rule.destination and evaluate_rule(rule, t)
+    ]
+    return PreviewResponse(total_torrents=len(torrents), matched=matched)

@@ -41,3 +41,18 @@ class RuleSchema(BaseModel):
     conditions: list[RuleConditionSchema]
 
     model_config = {"from_attributes": True}
+
+
+class PreviewTorrent(BaseModel):
+    hash: str
+    name: str
+    save_path: str
+
+
+class PreviewResponse(BaseModel):
+    total_torrents: int
+    matched: list[PreviewTorrent]
+
+
+class PreviewEvalRequest(BaseModel):
+    conditions: list[RuleConditionCreate] = Field(default_factory=list)

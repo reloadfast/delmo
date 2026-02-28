@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.connection import router as connection_router
+from app.api.dashboard import router as dashboard_router
 from app.api.logs import router as logs_router
 from app.api.rules import router as rules_router
 from app.api.settings import router as settings_router
@@ -61,6 +62,7 @@ app.include_router(connection_router, prefix="/api")
 app.include_router(torrents_router, prefix="/api")
 app.include_router(rules_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
+app.include_router(dashboard_router, prefix="/api")
 
 
 @app.get("/api/health", tags=["meta"])
