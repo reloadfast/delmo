@@ -9,13 +9,7 @@ interface ToggleProps {
   className?: string;
 }
 
-export function Toggle({
-  checked,
-  onCheckedChange,
-  label,
-  disabled,
-  className,
-}: ToggleProps) {
+export function Toggle({ checked, onCheckedChange, label, disabled, className }: ToggleProps) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <Switch.Root
@@ -27,14 +21,14 @@ export function Toggle({
           "border-2 border-transparent transition-colors duration-200",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-positive",
           "disabled:cursor-not-allowed disabled:opacity-50",
-          checked ? "bg-accent-positive" : "bg-border",
+          checked ? "bg-accent-positive" : "bg-border"
         )}
       >
         <Switch.Thumb
           className={cn(
             "pointer-events-none block h-4 w-4 rounded-full bg-white shadow-lg",
             "ring-0 transition-transform duration-200",
-            checked ? "translate-x-4" : "translate-x-0",
+            checked ? "translate-x-4" : "translate-x-0"
           )}
         />
       </Switch.Root>

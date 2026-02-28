@@ -33,7 +33,7 @@ export function Table<T>({
                 key={col.key}
                 className={cn(
                   "px-4 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wide",
-                  col.className,
+                  col.className
                 )}
               >
                 {col.header}
@@ -44,10 +44,7 @@ export function Table<T>({
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td
-                colSpan={columns.length}
-                className="px-4 py-8 text-center text-text-secondary"
-              >
+              <td colSpan={columns.length} className="px-4 py-8 text-center text-text-secondary">
                 {emptyMessage}
               </td>
             </tr>
@@ -58,10 +55,7 @@ export function Table<T>({
                 className="border-b border-border last:border-0 hover:bg-surface-hover transition-colors"
               >
                 {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    className={cn("px-4 py-3 text-text-primary", col.className)}
-                  >
+                  <td key={col.key} className={cn("px-4 py-3 text-text-primary", col.className)}>
                     {col.render(row)}
                   </td>
                 ))}

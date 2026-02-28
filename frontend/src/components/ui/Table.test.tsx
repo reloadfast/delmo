@@ -7,9 +7,7 @@ interface Row {
   name: string;
 }
 
-const columns: Column<Row>[] = [
-  { key: "name", header: "Name", render: (r) => r.name },
-];
+const columns: Column<Row>[] = [{ key: "name", header: "Name", render: (r) => r.name }];
 
 const rows: Row[] = [
   { id: "1", name: "Alpha" },
@@ -34,14 +32,7 @@ describe("Table", () => {
   });
 
   it("shows custom empty message", () => {
-    render(
-      <Table
-        columns={columns}
-        rows={[]}
-        keyFn={(r) => r.id}
-        emptyMessage="Nothing here"
-      />,
-    );
+    render(<Table columns={columns} rows={[]} keyFn={(r) => r.id} emptyMessage="Nothing here" />);
     expect(screen.getByText("Nothing here")).toBeInTheDocument();
   });
 

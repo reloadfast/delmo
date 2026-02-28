@@ -16,17 +16,13 @@ const variantClasses: Record<BadgeVariant, string> = {
   neutral: "border border-border text-text-secondary",
 };
 
-export function Badge({
-  children,
-  variant = "neutral",
-  className,
-}: BadgeProps) {
+export function Badge({ children, variant = "neutral", className }: BadgeProps) {
   return (
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
         variantClasses[variant],
-        className,
+        className
       )}
     >
       {children}

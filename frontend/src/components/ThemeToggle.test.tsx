@@ -18,19 +18,13 @@ describe("ThemeToggle", () => {
   it("shows moon icon in light mode", () => {
     vi.mocked(useTheme).mockReturnValue({ theme: "light", setTheme: vi.fn() });
     render(<ThemeToggle />);
-    expect(screen.getByRole("button")).toHaveAttribute(
-      "aria-label",
-      "Switch to dark theme",
-    );
+    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "Switch to dark theme");
   });
 
   it("shows sun icon in dark mode", () => {
     vi.mocked(useTheme).mockReturnValue({ theme: "dark", setTheme: vi.fn() });
     render(<ThemeToggle />);
-    expect(screen.getByRole("button")).toHaveAttribute(
-      "aria-label",
-      "Switch to light theme",
-    );
+    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "Switch to light theme");
   });
 
   it("calls setTheme with dark when in light mode", async () => {
