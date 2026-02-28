@@ -150,12 +150,24 @@ describe("logsApi", () => {
   it("list calls GET /api/logs with limit", async () => {
     mockOk([]);
     await logsApi.list(10);
-    expect(fetchMock.mock.calls[0][0]).toBe("/api/logs?limit=10");
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/logs?limit=10&offset=0");
   });
 
-  it("list uses default limit 100", async () => {
+  it("list uses default limit 100 and offset 0", async () => {
     mockOk([]);
     await logsApi.list();
-    expect(fetchMock.mock.calls[0][0]).toBe("/api/logs?limit=100");
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/logs?limit=100&offset=0");
+  });
+
+  it("list appends status filter when provided", async () => {
+    mockOk([]);
+    await logsApi.list(50, 0, "error");
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/logs?limit=50&offset=0&status=error");
+  });
+
+  it("list supports offset pagination", async () => {
+    mockOk([]);
+    await logsApi.list(50, 100);
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/logs?limit=50&offset=100");
   });
 });

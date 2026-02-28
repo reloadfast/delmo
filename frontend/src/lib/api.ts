@@ -116,5 +116,9 @@ export interface MoveLog {
 }
 
 export const logsApi = {
-  list: (limit = 100) => api.get<MoveLog[]>(`/api/logs?limit=${limit}`),
+  list: (limit = 100, offset = 0, status?: string) => {
+    const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+    if (status) params.set("status", status);
+    return api.get<MoveLog[]>(`/api/logs?${params}`);
+  },
 };
