@@ -8,7 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.connection import router as connection_router
 from app.api.settings import router as settings_router
+from app.api.torrents import router as torrents_router
 from app.core.database import init_db, seed_defaults
 
 logger = logging.getLogger(__name__)
@@ -43,6 +45,8 @@ app.add_middleware(
 
 # ── API routes ──────────────────────────────────────────────────────────────
 app.include_router(settings_router, prefix="/api")
+app.include_router(connection_router, prefix="/api")
+app.include_router(torrents_router, prefix="/api")
 
 
 @app.get("/api/health", tags=["meta"])
