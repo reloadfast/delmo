@@ -39,7 +39,7 @@ jobs:
       - name: Security audit (pip-audit)
         run: |
           pip install pip-audit
-          pip-audit --desc --fail-on HIGH
+          pip-audit --desc
 
   # ── Frontend ─────────────────────────────────────────────────────────────
   frontend:
