@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import date
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
@@ -93,7 +93,7 @@ async def get_dashboard(db: AsyncSession = Depends(get_db)) -> DashboardStats:
                     msg = msg.replace(password, "***")
                 error = msg
 
-    today = date.today().isoformat()
+    today = datetime.now(UTC).date().isoformat()
     moves_today_result = await db.execute(
         select(func.count(MoveLog.id)).where(
             func.date(MoveLog.created_at) == today,
