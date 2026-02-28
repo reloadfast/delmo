@@ -15,6 +15,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "backend"))
 from app.core.config import DATABASE_URL  # noqa: E402
 from app.core.database import Base  # noqa: E402
 import app.models.setting  # noqa: E402, F401 — registers model with Base.metadata
+import app.models.rule  # noqa: E402, F401 — registers Rule, RuleCondition
+import app.models.move_log  # noqa: E402, F401 — registers MoveLog
 
 config = context.config
 

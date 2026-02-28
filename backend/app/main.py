@@ -9,9 +9,12 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.connection import router as connection_router
+from app.api.logs import router as logs_router
+from app.api.rules import router as rules_router
 from app.api.settings import router as settings_router
 from app.api.torrents import router as torrents_router
 from app.core.database import init_db, seed_defaults
+from app.services.scheduler import start_scheduler, stop_scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +28,9 @@ async def lifespan(app: FastAPI) -> Any:
     await init_db()
     await seed_defaults()
     logger.info("Database ready.")
+    start_scheduler()
     yield
+    stop_scheduler()
     logger.info("Shutting down delmo.")
 
 
@@ -47,6 +52,8 @@ app.add_middleware(
 app.include_router(settings_router, prefix="/api")
 app.include_router(connection_router, prefix="/api")
 app.include_router(torrents_router, prefix="/api")
+app.include_router(rules_router, prefix="/api")
+app.include_router(logs_router, prefix="/api")
 
 
 @app.get("/api/health", tags=["meta"])
