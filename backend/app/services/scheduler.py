@@ -20,6 +20,7 @@ from apscheduler.schedulers.asyncio import (  # type: ignore[import-untyped,unus
 )
 from sqlalchemy import select
 
+from app.core.broadcast import log_broadcaster
 from app.core.database import AsyncSessionLocal
 from app.models.move_log import MoveLog
 from app.models.rule import Rule
@@ -52,9 +53,30 @@ async def _write_logs(results: list[dict[str, Any]]) -> None:
     if not results:
         return
     async with AsyncSessionLocal() as session:
-        for entry in results:
-            session.add(MoveLog(**entry))
+        logs = [MoveLog(**entry) for entry in results]
+        session.add_all(logs)
+        await session.flush()
+        for log in logs:
+            await session.refresh(log)
+        broadcast_entries: list[dict[str, Any]] = [
+            {
+                "id": log.id,
+                "torrent_hash": log.torrent_hash,
+                "torrent_name": log.torrent_name,
+                "rule_id": log.rule_id,
+                "rule_name": log.rule_name,
+                "source_path": log.source_path,
+                "destination_path": log.destination_path,
+                "status": log.status,
+                "error_message": log.error_message,
+                "created_at": log.created_at.isoformat() if log.created_at else None,
+            }
+            for log in logs
+        ]
         await session.commit()
+
+    for entry in broadcast_entries:
+        log_broadcaster.publish(entry)
 
 
 async def run_poll_cycle() -> None:

@@ -12,10 +12,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy API calls to backend during development
+      // Proxy API calls (HTTP + WebSocket) to backend during development
       "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,
+        ws: true,
       },
     },
   },
