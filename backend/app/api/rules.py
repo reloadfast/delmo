@@ -93,7 +93,7 @@ async def create_rule(
         name=body.name,
         priority=body.priority,
         enabled=body.enabled,
-        destination=body.destination,
+        destination=body.destination.rstrip("/"),
     )
     db.add(rule)
     await db.flush()  # populate rule.id before adding conditions
@@ -123,7 +123,7 @@ async def update_rule(
     if body.enabled is not None:
         rule.enabled = body.enabled
     if body.destination is not None:
-        rule.destination = body.destination
+        rule.destination = body.destination.rstrip("/")
     if body.conditions is not None:
         # Replace all conditions
         for existing in list(rule.conditions):
@@ -192,6 +192,7 @@ async def preview_rule(
     matched = [
         PreviewTorrent(hash=t.hash, name=t.name, save_path=t.save_path)
         for t in torrents
-        if t.save_path != rule.destination and evaluate_rule(rule, t)
+        if t.save_path.rstrip("/") != rule.destination.rstrip("/")
+        and evaluate_rule(rule, t)
     ]
     return PreviewResponse(total_torrents=len(torrents), matched=matched)

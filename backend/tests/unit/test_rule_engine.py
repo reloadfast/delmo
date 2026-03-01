@@ -159,6 +159,13 @@ def test_find_matches_idempotency_guard() -> None:
     assert find_matches(rules, torrents) == []
 
 
+def test_find_matches_idempotency_guard_trailing_slash() -> None:
+    """Trailing-slash mismatch must not bypass the idempotency guard."""
+    rules = [_rule(id_=1, destination="/dest", conditions=[("extension", ".mkv")])]
+    torrents = [_torrent(hash_="t1", save_path="/dest/", files=["movie.mkv"])]
+    assert find_matches(rules, torrents) == []
+
+
 def test_find_matches_disabled_rule_skipped() -> None:
     rules = [_rule(id_=1, enabled=False, conditions=[("extension", ".mkv")])]
     torrents = [_torrent(hash_="t1", files=["movie.mkv"])]
