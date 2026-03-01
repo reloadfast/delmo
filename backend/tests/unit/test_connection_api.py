@@ -62,6 +62,7 @@ async def test_connection_status_connected(client: AsyncClient) -> None:
     mock_client.connect = AsyncMock()
     mock_client.disconnect = AsyncMock()
     mock_client.daemon_version = "2.1.1"
+    mock_client.check_label_plugin = AsyncMock(return_value=True)
 
     with _settings_patch(_CONFIGURED_SETTINGS), patch(
         "app.api.connection.DelugeClient", return_value=mock_client
@@ -73,6 +74,7 @@ async def test_connection_status_connected(client: AsyncClient) -> None:
     assert body["connected"] is True
     assert body["daemon_version"] == "2.1.1"
     assert body["error"] is None
+    assert body["label_plugin_available"] is True
 
 
 async def test_connection_status_connect_error(client: AsyncClient) -> None:

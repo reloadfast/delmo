@@ -13,6 +13,7 @@ import {
   type PreviewResult,
   type Rule,
   type RuleCreate,
+  connectionApi,
   rulesApi,
 } from "../lib/api";
 
@@ -124,6 +125,12 @@ function RuleFormModal({
     isEditing ? ruleToForm(editRule as Rule) : EMPTY_FORM
   );
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const { data: connStatus } = useQuery({
+    queryKey: ["connection-status"],
+    queryFn: connectionApi.status,
+    staleTime: 30_000,
+  });
 
   const createMutation = useMutation({
     mutationFn: (body: RuleCreate) => rulesApi.create(body),
@@ -304,7 +311,7 @@ function RuleFormModal({
                     <Select.Root
                       value={cond.condition_type}
                       onValueChange={(v) =>
-                        setCondition(i, "condition_type", v as "extension" | "tracker")
+                        setCondition(i, "condition_type", v as "extension" | "tracker" | "label")
                       }
                     >
                       <Select.Trigger className="flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm bg-surface text-text-primary w-32 shrink-0 focus:outline-none">
@@ -328,6 +335,12 @@ function RuleFormModal({
                             >
                               <Select.ItemText>tracker</Select.ItemText>
                             </Select.Item>
+                            <Select.Item
+                              value="label"
+                              className="px-3 py-1.5 text-sm rounded cursor-pointer hover:bg-surface-hover text-text-primary outline-none"
+                            >
+                              <Select.ItemText>label</Select.ItemText>
+                            </Select.Item>
                           </Select.Viewport>
                         </Select.Content>
                       </Select.Portal>
@@ -336,7 +349,11 @@ function RuleFormModal({
                       value={cond.value}
                       onChange={(e) => setCondition(i, "value", e.target.value)}
                       placeholder={
-                        cond.condition_type === "extension" ? "mkv" : "tracker.example.com"
+                        cond.condition_type === "extension"
+                          ? "mkv"
+                          : cond.condition_type === "label"
+                            ? "linux"
+                            : "tracker.example.com"
                       }
                       className="flex-1 rounded-lg border border-border px-3 py-2 text-sm bg-surface text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-positive"
                     />
@@ -352,6 +369,14 @@ function RuleFormModal({
                   </div>
                 ))}
               </div>
+
+              {form.conditions.some((c) => c.condition_type === "label") &&
+                connStatus?.label_plugin_available === false && (
+                  <p className="text-xs text-accent-warning mt-1">
+                    ⚠ The Deluge Label plugin is not active — label conditions will not match any
+                    torrents.
+                  </p>
+                )}
 
               <LivePreview conditions={form.conditions} />
             </div>

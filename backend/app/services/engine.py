@@ -7,6 +7,8 @@ pairs that match. A rule matches if ANY of its conditions match (OR logic).
 Condition types:
   extension — any file in the torrent has the given extension (e.g. ".mkv")
   tracker   — any tracker domain contains the given value (case-insensitive substring)
+  label     — torrent label exactly equals the value (case-insensitive); requires
+               the Deluge Label plugin to be active
 
 Idempotency guard: skip if torrent.save_path already equals rule.destination.
 require_complete: if set on a rule, skip torrents that are not fully downloaded.
@@ -36,6 +38,15 @@ def _matches_tracker(torrent: TorrentInfo, value: str) -> bool:
     return any(needle in domain for domain in torrent.tracker_domains)
 
 
+def _matches_label(torrent: TorrentInfo, value: str) -> bool:
+    """True if the torrent's label exactly equals *value* (case-insensitive).
+
+    Requires the Deluge Label plugin to be active; when the plugin is absent
+    torrent.label is always "" so label conditions will simply never match.
+    """
+    return torrent.label.lower() == value.lower()
+
+
 def evaluate_rule(rule: Rule, torrent: TorrentInfo) -> bool:
     """Return True if *torrent* satisfies at least one condition of *rule*."""
     for condition in rule.conditions:
@@ -44,6 +55,9 @@ def evaluate_rule(rule: Rule, torrent: TorrentInfo) -> bool:
                 return True
         elif condition.condition_type == "tracker":
             if _matches_tracker(torrent, condition.value):
+                return True
+        elif condition.condition_type == "label":
+            if _matches_label(torrent, condition.value):
                 return True
     return False
 

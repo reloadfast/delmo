@@ -56,8 +56,13 @@ async def connection_status(
     try:
         await asyncio.wait_for(client.connect(), timeout=_RPC_TIMEOUT)
         version = client.daemon_version
+        label_plugin = await client.check_label_plugin()
         await client.disconnect()
-        return ConnectionStatusResponse(connected=True, daemon_version=version)
+        return ConnectionStatusResponse(
+            connected=True,
+            daemon_version=version,
+            label_plugin_available=label_plugin,
+        )
     except TimeoutError:
         return ConnectionStatusResponse(
             connected=False,

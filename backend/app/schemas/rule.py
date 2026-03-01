@@ -12,7 +12,7 @@ class RuleConditionSchema(BaseModel):
 
 
 class RuleConditionCreate(BaseModel):
-    condition_type: str = Field(..., pattern="^(extension|tracker)$")
+    condition_type: str = Field(..., pattern="^(extension|tracker|label)$")
     value: str = Field(..., min_length=1)
 
 
