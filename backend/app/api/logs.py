@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -10,6 +10,19 @@ from app.models.move_log import MoveLog
 from app.schemas.move_log import MoveLogSchema
 
 router = APIRouter(prefix="/logs", tags=["logs"])
+
+
+@router.get("/count")
+async def count_logs(
+    status: str | None = Query(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, int]:
+    """Return the total number of move log entries (optionally filtered by status)."""
+    q = select(func.count(MoveLog.id))
+    if status is not None:
+        q = q.where(MoveLog.status == status)
+    result = await db.execute(q)
+    return {"total": result.scalar_one()}
 
 
 @router.get("", response_model=list[MoveLogSchema])

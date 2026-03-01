@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Column, Table } from "../components/ui/Table";
 import { Badge } from "../components/ui/Badge";
 import { Card, CardHeader, CardTitle } from "../components/ui/Card";
 import { Skeleton } from "../components/ui/Skeleton";
 import { dashboardApi, logsApi, type DashboardStats, type MoveLog } from "../lib/api";
+
+const PAGE_SIZE = 10;
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -106,6 +109,8 @@ const LOG_COLUMNS: Column<MoveLog>[] = [
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export function DashboardPage() {
+  const [page, setPage] = useState(1);
+
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["dashboard"],
     queryFn: dashboardApi.get,
@@ -113,10 +118,21 @@ export function DashboardPage() {
   });
 
   const { data: logs = [], isLoading: logsLoading } = useQuery({
-    queryKey: ["logs", 10],
-    queryFn: () => logsApi.list(10),
+    queryKey: ["logs", page],
+    queryFn: () => logsApi.list(PAGE_SIZE, (page - 1) * PAGE_SIZE),
     refetchInterval: 30_000,
   });
+
+  const { data: countData } = useQuery({
+    queryKey: ["logs-count"],
+    queryFn: () => logsApi.count(),
+    refetchInterval: 30_000,
+  });
+
+  const total = countData?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const from = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const to = Math.min(page * PAGE_SIZE, total);
 
   const na = "—";
 
@@ -145,17 +161,47 @@ export function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Moves</CardTitle>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <CardTitle>Recent Moves</CardTitle>
+            {total > 0 && (
+              <span className="text-xs text-text-secondary">
+                {from}–{to} of {total}
+              </span>
+            )}
+          </div>
         </CardHeader>
         {logsLoading ? (
           <Skeleton className="h-32" />
         ) : (
-          <Table
-            columns={LOG_COLUMNS}
-            rows={logs}
-            keyFn={(r) => String(r.id)}
-            emptyMessage="No moves recorded yet."
-          />
+          <>
+            <Table
+              columns={LOG_COLUMNS}
+              rows={logs}
+              keyFn={(r) => String(r.id)}
+              emptyMessage="No moves recorded yet."
+            />
+            {totalPages > 1 && (
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-border mt-3">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1 text-xs rounded-lg border border-border bg-surface text-text-primary disabled:opacity-40 hover:bg-background transition-colors"
+                >
+                  Prev
+                </button>
+                <span className="text-xs text-text-secondary">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-3 py-1 text-xs rounded-lg border border-border bg-surface text-text-primary disabled:opacity-40 hover:bg-background transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </Card>
     </div>

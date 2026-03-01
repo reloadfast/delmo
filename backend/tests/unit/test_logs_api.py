@@ -118,3 +118,31 @@ async def test_list_logs_offset(client: AsyncClient, db: AsyncSession) -> None:
 async def test_list_logs_invalid_offset(client: AsyncClient) -> None:
     resp = await client.get("/api/logs?offset=-1")
     assert resp.status_code == 422
+
+
+async def test_count_logs_empty(client: AsyncClient) -> None:
+    resp = await client.get("/api/logs/count")
+    assert resp.status_code == 200
+    assert resp.json() == {"total": 0}
+
+
+async def test_count_logs(client: AsyncClient, db: AsyncSession) -> None:
+    for i in range(3):
+        db.add(
+            MoveLog(
+                torrent_hash=f"cnt{i}",
+                torrent_name=f"T{i}",
+                source_path="/dl",
+                destination_path="/dest",
+                status="success" if i < 2 else "error",
+            )
+        )
+    await db.flush()
+
+    resp = await client.get("/api/logs/count")
+    assert resp.status_code == 200
+    assert resp.json()["total"] >= 3
+
+    resp_filtered = await client.get("/api/logs/count?status=error")
+    assert resp_filtered.status_code == 200
+    assert resp_filtered.json()["total"] >= 1
