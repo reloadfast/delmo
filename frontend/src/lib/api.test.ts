@@ -119,6 +119,8 @@ describe("rulesApi", () => {
       name: "R",
       priority: 100,
       enabled: true,
+      dry_run: false,
+      require_complete: false,
       destination: "/d",
       conditions: [],
     });
