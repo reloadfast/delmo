@@ -22,6 +22,21 @@ const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function copyText(text: string): void {
+  if (navigator.clipboard?.writeText) {
+    void navigator.clipboard.writeText(text);
+  } else {
+    // Fallback for HTTP (non-secure) LAN contexts where Clipboard API is unavailable
+    const el = document.createElement("textarea");
+    el.value = text;
+    el.style.cssText = "position:fixed;opacity:0;pointer-events:none";
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand("copy");
+    document.body.removeChild(el);
+  }
+}
+
 function statusVariant(status: string): BadgeVariant {
   if (status === "success") return "positive";
   if (status === "error") return "danger";
@@ -56,13 +71,13 @@ const COLUMNS: Column<MoveLog>[] = [
       <div
         className={r.error_message ? "cursor-pointer select-none" : undefined}
         title={r.error_message ? "Click to copy full error" : undefined}
-        onClick={
-          r.error_message ? () => void navigator.clipboard.writeText(r.error_message!) : undefined
-        }
+        onClick={r.error_message ? () => copyText(r.error_message!) : undefined}
       >
         <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
         {r.error_message && (
-          <p className="text-xs text-accent-danger mt-1 max-w-xs line-clamp-2">{r.error_message}</p>
+          <p className="text-xs text-accent-danger mt-1 max-w-xs line-clamp-4 whitespace-pre-wrap">
+            {r.error_message}
+          </p>
         )}
       </div>
     ),
