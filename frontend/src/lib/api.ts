@@ -154,4 +154,9 @@ export const logsApi = {
     if (status) params.set("status", status);
     return api.get<MoveLog[]>(`/api/logs?${params}`);
   },
+  count: (status?: string) => {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    return api.get<{ total: number }>(`/api/logs/count?${params}`);
+  },
 };
