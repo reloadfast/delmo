@@ -272,12 +272,24 @@ class DelugeClient:
                 TorrentFile(path=f.get("path", ""), size=f.get("size", 0))
                 for f in (data.get("files") or [])
             ]
+            # Some Deluge versions return path="" for single-file torrents
+            # (only the directory component is stored; the root file has no subdir).
+            # Fall back to the torrent name so extension matching still works.
+            if files and all(f.path == "" for f in files):
+                torrent_name = data.get("name", "")
+                if torrent_name:
+                    files = [TorrentFile(path=torrent_name, size=files[0].size)]
             tracker_domains = list(
                 {
                     _extract_domain(t.get("url", ""))
                     for t in (data.get("trackers") or [])
                     if t.get("url")
                 }
+            )
+            logger.debug(
+                "Torrent %r raw trackers: %r",
+                data.get("name", torrent_hash),
+                data.get("trackers", [])[:3],
             )
             results.append(
                 TorrentInfo(

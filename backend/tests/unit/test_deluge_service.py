@@ -230,6 +230,26 @@ async def test_get_torrents_handles_missing_fields() -> None:
     assert torrents[0].tracker_domains == []
 
 
+async def test_get_torrents_single_file_empty_path_fallback() -> None:
+    """Single-file torrents with path='' fall back to the torrent name."""
+    raw = {
+        "abc123": {
+            "name": "debian-12.iso",
+            "save_path": "/downloads",
+            "files": [{"path": "", "size": 900_000_000}],
+            "trackers": [],
+            "state": "Seeding",
+            "progress": 100.0,
+        }
+    }
+    client, mock_rpc = _make_client_with_mock_rpc()
+    mock_rpc.call = MagicMock(return_value=raw)
+
+    torrents = await client.get_torrents()
+    assert torrents[0].files[0].path == "debian-12.iso"
+    assert torrents[0].files[0].extension == ".iso"
+
+
 # ---------------------------------------------------------------------------
 # DelugeClient — move_torrent
 # ---------------------------------------------------------------------------
