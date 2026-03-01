@@ -65,6 +65,9 @@ def _decode_keys(obj: Any) -> Any:
 
     The deluge-client library decodes msgpack responses with raw bytes in some
     versions/configurations.  Normalising here keeps all downstream code simple.
+
+    Handles list AND tuple because deluge-client occasionally returns tracker
+    lists (and other nested sequences) as tuples rather than lists.
     """
     if isinstance(obj, dict):
         return {
@@ -73,7 +76,7 @@ def _decode_keys(obj: Any) -> Any:
             )
             for k, v in obj.items()
         }
-    if isinstance(obj, list):
+    if isinstance(obj, (list, tuple)):
         return [_decode_keys(i) for i in obj]
     if isinstance(obj, bytes):
         return obj.decode("utf-8", errors="replace")

@@ -198,6 +198,31 @@ async def test_get_torrents_bytes_keys_decoded() -> None:
     assert "tracker.example.com" in torrents[0].tracker_domains
 
 
+async def test_get_torrents_tracker_tuple_bytes_keys() -> None:
+    """Tracker domains extracted when trackers arrive as a tuple of bytes-keyed dicts.
+
+    deluge-client sometimes returns tracker lists as tuples; bytes keys are a
+    separate orthogonal issue — both must be handled together.
+    """
+    raw = {
+        "abc123": {
+            "name": "My Movie",
+            "save_path": "/downloads",
+            "files": [],
+            # tuple instead of list, with bytes keys inside each tracker dict
+            "trackers": ({b"url": b"https://tracker.example.com/announce"},),
+            "state": "Seeding",
+            "progress": 100.0,
+        }
+    }
+    client, mock_rpc = _make_client_with_mock_rpc()
+    mock_rpc.call = MagicMock(return_value=raw)
+
+    torrents = await client.get_torrents()
+    assert len(torrents) == 1
+    assert "tracker.example.com" in torrents[0].tracker_domains
+
+
 # ---------------------------------------------------------------------------
 # _decode_keys
 # ---------------------------------------------------------------------------
@@ -212,6 +237,11 @@ async def test_get_torrents_bytes_keys_decoded() -> None:
         ("already_str", "already_str"),
         (42, 42),
         ({b"list": [{b"url": b"http://example.com"}]}, {"list": [{"url": "http://example.com"}]}),
+        # deluge-client sometimes returns tracker lists as tuples
+        (
+            {b"trackers": ({b"url": b"https://example.com/announce"},)},
+            {"trackers": [{"url": "https://example.com/announce"}]},
+        ),
     ],
 )
 def test_decode_keys(obj: object, expected: object) -> None:

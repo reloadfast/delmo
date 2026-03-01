@@ -132,42 +132,17 @@ async def raw_torrent_debug(
     else:
         items = list(raw.items())[:3]
 
-    result = []
-    for h, d in items:
-        trackers_raw = d.get("trackers") or []
-        # Collect per-tracker diagnostic data
-        tracker_debug: list[dict[str, Any]] = []
-        domains: set[str] = set()
-        for t in trackers_raw:
-            url_val = t.get("url") if isinstance(t, dict) else None
-            url_bytes_val = t.get(b"url") if isinstance(t, dict) else None
-            url_via_index = t["url"] if isinstance(t, dict) and "url" in t else None
-            tracker_debug.append(
+    return [
+        {
+            "hash": h,
+            "computed_tracker_domains": list(
                 {
-                    "t_type": type(t).__name__,
-                    "t_keys_sample": (
-                        [repr(k) for k in list(t.keys())[:4]]
-                        if isinstance(t, dict)
-                        else None
-                    ),
-                    "trackers_raw_type": type(trackers_raw).__name__,
-                    "has_url_key": isinstance(t, dict) and "url" in t,
-                    "has_bytes_url_key": isinstance(t, dict) and b"url" in t,
-                    "url_via_get": url_val,
-                    "url_via_bytes_get": str(url_bytes_val) if url_bytes_val else None,
-                    "url_via_index": url_via_index,
-                    "url_is_truthy": bool(url_val),
+                    _extract_domain(t.get("url", ""))
+                    for t in (d.get("trackers") or [])
+                    if t.get("url")
                 }
-            )
-            if url_val:
-                domains.add(_extract_domain(url_val))
-
-        result.append(
-            {
-                "hash": h,
-                "computed_tracker_domains": list(domains),
-                "_debug_trackers": tracker_debug,
-                **{k: v for k, v in d.items() if k != "password"},
-            }
-        )
-    return result
+            ),
+            **{k: v for k, v in d.items() if k != "password"},
+        }
+        for h, d in items
+    ]
