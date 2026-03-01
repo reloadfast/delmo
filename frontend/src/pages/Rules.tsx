@@ -373,7 +373,8 @@ function RuleFormModal({
               {form.conditions.some((c) => c.condition_type === "label") &&
                 connStatus?.label_plugin_available === false && (
                   <p className="text-xs text-accent-warning mt-1">
-                    ⚠ The Deluge Label plugin is not active — label conditions will not match any torrents.
+                    ⚠ The Deluge Label plugin is not active — label conditions will not match any
+                    torrents.
                   </p>
                 )}
 
