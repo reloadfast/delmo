@@ -311,8 +311,13 @@ class DelugeClient:
         Tries `core.move_storage` first; if the daemon raises `MethodNotFound`
         (Deluge 1.x), retries with `core.move_torrent_data`.
         """
+        # Deluge 2.x core.move_storage expects a list of hashes; Deluge 1.x
+        # core.move_torrent_data also accepts a list in practice.  Passing a
+        # bare string causes Deluge to iterate over the characters, producing
+        # KeyError on the first character of the hash.
+        ids = [torrent_hash]
         try:
-            await self._call(self._move_method, torrent_hash, destination)
+            await self._call(self._move_method, ids, destination)
         except Exception as exc:
             exc_name = type(exc).__name__
             exc_msg = str(exc).lower()
@@ -328,7 +333,7 @@ class DelugeClient:
                     fallback,
                 )
                 self._move_method = fallback
-                await self._call(self._move_method, torrent_hash, destination)
+                await self._call(self._move_method, ids, destination)
             else:
                 raise
 
