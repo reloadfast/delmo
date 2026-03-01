@@ -93,6 +93,8 @@ async def create_rule(
         name=body.name,
         priority=body.priority,
         enabled=body.enabled,
+        dry_run=body.dry_run,
+        require_complete=body.require_complete,
         destination=body.destination.rstrip("/"),
     )
     db.add(rule)
@@ -122,6 +124,10 @@ async def update_rule(
         rule.priority = body.priority
     if body.enabled is not None:
         rule.enabled = body.enabled
+    if body.dry_run is not None:
+        rule.dry_run = body.dry_run
+    if body.require_complete is not None:
+        rule.require_complete = body.require_complete
     if body.destination is not None:
         rule.destination = body.destination.rstrip("/")
     if body.conditions is not None:
