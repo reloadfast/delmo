@@ -60,6 +60,26 @@ class ConnectionStatus:
 _DOMAIN_RE = re.compile(r"^(?:https?://)?([^/:]+)", re.IGNORECASE)
 
 
+def _decode_keys(obj: Any) -> Any:
+    """Recursively convert bytes dict keys/values to str (msgpack compatibility).
+
+    The deluge-client library decodes msgpack responses with raw bytes in some
+    versions/configurations.  Normalising here keeps all downstream code simple.
+    """
+    if isinstance(obj, dict):
+        return {
+            (k.decode("utf-8", errors="replace") if isinstance(k, bytes) else k): (
+                _decode_keys(v)
+            )
+            for k, v in obj.items()
+        }
+    if isinstance(obj, list):
+        return [_decode_keys(i) for i in obj]
+    if isinstance(obj, bytes):
+        return obj.decode("utf-8", errors="replace")
+    return obj
+
+
 def _extract_domain(tracker_url: str) -> str:
     """Return the hostname from a tracker announce URL.
 
@@ -245,6 +265,7 @@ class DelugeClient:
         raw: dict[str, dict[str, Any]] = await self._call(
             "core.get_torrents_status", {}, _TORRENT_KEYS
         )
+        raw = _decode_keys(raw)
         results: list[TorrentInfo] = []
         for torrent_hash, data in raw.items():
             files = [
