@@ -299,7 +299,9 @@ def test_find_matches_require_complete_false_allows_incomplete() -> None:
 
 async def test_execute_moves_dry_run_skips_rpc() -> None:
     """Dry-run rules log the intended move without calling move_torrent."""
-    rule = _rule(id_=1, destination="/dest", conditions=[("extension", ".mkv")], dry_run=True)
+    rule = _rule(
+        id_=1, destination="/dest", conditions=[("extension", ".mkv")], dry_run=True
+    )
     torrent = _torrent(hash_="t1", save_path="/src", files=["movie.mkv"])
     mock_client = MagicMock()
     mock_client.move_torrent = AsyncMock()
@@ -312,7 +314,9 @@ async def test_execute_moves_dry_run_skips_rpc() -> None:
 
 async def test_execute_moves_dry_run_false_calls_rpc() -> None:
     """Non-dry-run rules still call move_torrent normally."""
-    rule = _rule(id_=1, destination="/dest", conditions=[("extension", ".mkv")], dry_run=False)
+    rule = _rule(
+        id_=1, destination="/dest", conditions=[("extension", ".mkv")], dry_run=False
+    )
     torrent = _torrent(hash_="t1", save_path="/src", files=["movie.mkv"])
     mock_client = MagicMock()
     mock_client.move_torrent = AsyncMock()

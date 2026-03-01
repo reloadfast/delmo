@@ -279,10 +279,7 @@ function RuleFormModal({
                     Log matches without actually moving files.
                   </p>
                 </div>
-                <Toggle
-                  checked={form.dry_run}
-                  onCheckedChange={(v) => setField("dry_run", v)}
-                />
+                <Toggle checked={form.dry_run} onCheckedChange={(v) => setField("dry_run", v)} />
               </div>
             </div>
 
