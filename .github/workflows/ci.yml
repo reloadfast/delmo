@@ -83,6 +83,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [backend, frontend]
 
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -96,11 +100,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Extract metadata (tags & labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: talesofthemoon/delmo
+          images: |
+            talesofthemoon/delmo
+            ghcr.io/reloadfast/delmo
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -128,3 +142,22 @@ jobs:
           sleep 5
           curl -f http://localhost:8000/api/health
           docker stop delmo-ci
+
+  # ── GitHub Release ────────────────────────────────────────────────────────
+  release:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    needs: [docker]
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          make_latest: true

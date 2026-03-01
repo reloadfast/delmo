@@ -10,7 +10,11 @@ COPY frontend/ ./
 RUN npm run build
 
 # ── Stage 2: Python runtime + built frontend ─────────────────────────────────
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim AS runtime
+
+LABEL org.opencontainers.image.source="https://github.com/reloadfast/delmo"
+LABEL org.opencontainers.image.description="Automatic torrent data mover via Deluge RPC"
+LABEL org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app
 

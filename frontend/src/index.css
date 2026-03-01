@@ -9,6 +9,7 @@
   --color-border: oklch(28% 0.02 255);
   --color-text-primary: oklch(94% 0.01 255);
   --color-text-secondary: oklch(58% 0.02 255);
+  --color-accent: oklch(62% 0.2 250);
   --color-accent-positive: oklch(72% 0.17 160);
   --color-accent-warning: oklch(78% 0.18 80);
   --color-accent-danger: oklch(65% 0.22 15);
@@ -25,6 +26,7 @@
   --color-border: oklch(87% 0.01 255);
   --color-text-primary: oklch(16% 0.02 255);
   --color-text-secondary: oklch(44% 0.02 255);
+  --color-accent: oklch(52% 0.2 250);
   --color-accent-positive: oklch(52% 0.16 160);
   --color-accent-warning: oklch(58% 0.17 80);
   --color-accent-danger: oklch(50% 0.22 15);
@@ -40,6 +42,7 @@
   --color-border: var(--color-border);
   --color-text-primary: var(--color-text-primary);
   --color-text-secondary: var(--color-text-secondary);
+  --color-accent: var(--color-accent);
   --color-accent-positive: var(--color-accent-positive);
   --color-accent-warning: var(--color-accent-warning);
   --color-accent-danger: var(--color-accent-danger);
