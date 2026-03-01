@@ -52,7 +52,16 @@ const COLUMNS: Column<MoveLog>[] = [
   {
     key: "status",
     header: "Status",
-    render: (r) => <Badge variant={statusVariant(r.status)}>{r.status}</Badge>,
+    render: (r) => (
+      <div>
+        <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
+        {r.error_message && (
+          <p className="text-xs text-accent-danger mt-1 max-w-xs" title={r.error_message}>
+            {r.error_message.length > 80 ? r.error_message.slice(0, 80) + "…" : r.error_message}
+          </p>
+        )}
+      </div>
+    ),
   },
   {
     key: "created_at",

@@ -653,7 +653,13 @@ export function RulesPage() {
         )}
       </Card>
 
-      <RuleFormModal editRule={editRule} onClose={() => setEditRule(null)} />
+      <RuleFormModal
+        key={
+          editRule === null ? "closed" : editRule === "new" ? "new" : String((editRule as Rule).id)
+        }
+        editRule={editRule}
+        onClose={() => setEditRule(null)}
+      />
       <DeleteConfirmDialog rule={deleteRule} onClose={() => setDeleteRule(null)} />
       <PreviewModal rule={previewRule} onClose={() => setPreviewRule(null)} />
     </>
