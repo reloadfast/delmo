@@ -132,17 +132,33 @@ async def raw_torrent_debug(
     else:
         items = list(raw.items())[:3]
 
-    return [
-        {
-            "hash": h,
-            "computed_tracker_domains": list(
+    result = []
+    for h, d in items:
+        trackers_raw = d.get("trackers") or []
+        # Collect per-tracker diagnostic data
+        tracker_debug: list[dict[str, Any]] = []
+        domains: set[str] = set()
+        for t in trackers_raw:
+            url_val = t.get("url") if isinstance(t, dict) else None
+            url_via_index = t["url"] if isinstance(t, dict) and "url" in t else None
+            tracker_debug.append(
                 {
-                    _extract_domain(t.get("url", ""))
-                    for t in (d.get("trackers") or [])
-                    if t.get("url")
+                    "t_type": type(t).__name__,
+                    "has_url_key": isinstance(t, dict) and "url" in t,
+                    "url_via_get": url_val,
+                    "url_via_index": url_via_index,
+                    "url_is_truthy": bool(url_val),
                 }
-            ),
-            **{k: v for k, v in d.items() if k != "password"},
-        }
-        for h, d in items
-    ]
+            )
+            if url_val:
+                domains.add(_extract_domain(url_val))
+
+        result.append(
+            {
+                "hash": h,
+                "computed_tracker_domains": list(domains),
+                "_debug_trackers": tracker_debug,
+                **{k: v for k, v in d.items() if k != "password"},
+            }
+        )
+    return result
