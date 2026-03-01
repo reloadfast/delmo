@@ -40,7 +40,7 @@ export interface ConnectionStatus {
   connected: boolean;
   daemon_version: string | null;
   error: string | null;
-  label_plugin_available: boolean | null;
+  label_plugin_available?: boolean | null;
 }
 
 export interface ConnectionTestPayload {
