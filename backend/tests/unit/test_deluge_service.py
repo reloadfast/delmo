@@ -5,6 +5,7 @@ import pytest
 from app.services.deluge import (
     DelugeClient,
     TorrentFile,
+    _decode_keys,
     _extract_domain,
     _select_move_method,
 )
@@ -174,6 +175,47 @@ async def test_get_torrents_deduplicates_tracker_domains() -> None:
 
     torrents = await client.get_torrents()
     assert torrents[0].tracker_domains.count("tracker.example.com") == 1
+
+
+async def test_get_torrents_bytes_keys_decoded() -> None:
+    """Tracker domains are extracted even when msgpack returns bytes keys."""
+    raw = {
+        b"abc123": {
+            b"name": b"My Movie",
+            b"save_path": b"/downloads",
+            b"files": [{b"path": b"movie.mkv", b"size": 1_000_000_000}],
+            b"trackers": [{b"url": b"https://tracker.example.com/announce"}],
+            b"state": b"Seeding",
+            b"progress": 100.0,
+        }
+    }
+    client, mock_rpc = _make_client_with_mock_rpc()
+    mock_rpc.call = MagicMock(return_value=raw)
+
+    torrents = await client.get_torrents()
+    assert len(torrents) == 1
+    assert torrents[0].name == "My Movie"
+    assert "tracker.example.com" in torrents[0].tracker_domains
+
+
+# ---------------------------------------------------------------------------
+# _decode_keys
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "obj,expected",
+    [
+        ({b"key": b"val"}, {"key": "val"}),
+        ({b"nested": {b"k": b"v"}}, {"nested": {"k": "v"}}),
+        ([b"a", b"b"], ["a", "b"]),
+        ("already_str", "already_str"),
+        (42, 42),
+        ({b"list": [{b"url": b"http://example.com"}]}, {"list": [{"url": "http://example.com"}]}),
+    ],
+)
+def test_decode_keys(obj: object, expected: object) -> None:
+    assert _decode_keys(obj) == expected
 
 
 async def test_get_torrents_handles_missing_fields() -> None:
