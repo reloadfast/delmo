@@ -22,6 +22,8 @@ interface FormState {
   name: string;
   priority: string;
   destination: string;
+  dry_run: boolean;
+  require_complete: boolean;
   conditions: ConditionInput[];
 }
 
@@ -35,6 +37,8 @@ const EMPTY_FORM: FormState = {
   name: "",
   priority: "100",
   destination: "",
+  dry_run: false,
+  require_complete: false,
   conditions: [{ condition_type: "extension", value: "" }],
 };
 
@@ -43,6 +47,8 @@ function ruleToForm(rule: Rule): FormState {
     name: rule.name,
     priority: String(rule.priority),
     destination: rule.destination,
+    dry_run: rule.dry_run,
+    require_complete: rule.require_complete,
     conditions: rule.conditions.map((c) => ({
       condition_type: c.condition_type,
       value: c.value,
@@ -174,6 +180,8 @@ function RuleFormModal({
       name: form.name.trim(),
       priority: parseInt(form.priority, 10) || 100,
       enabled: isEditing ? (editRule as Rule).enabled : true,
+      dry_run: form.dry_run,
+      require_complete: form.require_complete,
       destination: form.destination.trim(),
       conditions: form.conditions.filter((c) => c.value.trim()),
     };
@@ -248,6 +256,34 @@ function RuleFormModal({
               {errors.destination && (
                 <p className="text-xs text-accent-danger mt-1">{errors.destination}</p>
               )}
+            </div>
+
+            {/* Options */}
+            <div className="rounded-lg border border-border p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-text-primary">Require complete</p>
+                  <p className="text-xs text-text-secondary">
+                    Only move torrents that have finished downloading.
+                  </p>
+                </div>
+                <Toggle
+                  checked={form.require_complete}
+                  onCheckedChange={(v) => setField("require_complete", v)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-text-primary">Dry run</p>
+                  <p className="text-xs text-text-secondary">
+                    Log matches without actually moving files.
+                  </p>
+                </div>
+                <Toggle
+                  checked={form.dry_run}
+                  onCheckedChange={(v) => setField("dry_run", v)}
+                />
+              </div>
             </div>
 
             {/* Conditions */}
@@ -573,6 +609,8 @@ export function RulesPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm text-text-primary">{rule.name}</span>
                       <Badge variant="neutral">#{rule.priority}</Badge>
+                      {rule.dry_run && <Badge variant="warning">dry run</Badge>}
+                      {rule.require_complete && <Badge variant="neutral">complete only</Badge>}
                     </div>
                     {condSummary && (
                       <p className="text-xs text-text-secondary mt-0.5 truncate">{condSummary}</p>

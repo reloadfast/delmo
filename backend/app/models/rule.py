@@ -19,6 +19,8 @@ class Rule(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=100)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    dry_run: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    require_complete: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     destination: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

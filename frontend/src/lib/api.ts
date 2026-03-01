@@ -88,6 +88,8 @@ export interface Rule {
   name: string;
   priority: number;
   enabled: boolean;
+  dry_run: boolean;
+  require_complete: boolean;
   destination: string;
   conditions: RuleCondition[];
 }
@@ -101,6 +103,8 @@ export interface RuleCreate {
   name: string;
   priority: number;
   enabled: boolean;
+  dry_run: boolean;
+  require_complete: boolean;
   destination: string;
   conditions: ConditionInput[];
 }
@@ -136,7 +140,7 @@ export interface MoveLog {
   rule_name: string | null;
   source_path: string;
   destination_path: string;
-  status: "success" | "skipped" | "error";
+  status: "success" | "skipped" | "error" | "dry_run";
   error_message: string | null;
   created_at: string;
 }

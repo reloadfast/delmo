@@ -27,13 +27,15 @@ def _torrent(
     save_path: str = "/downloads",
     files: list[str] | None = None,
     trackers: list[str] | None = None,
+    progress: float = 100.0,
+    state: str = "Seeding",
 ) -> TorrentInfo:
     return TorrentInfo(
         hash=hash_,
         name=f"Torrent-{hash_}",
         save_path=save_path,
-        state="Seeding",
-        progress=100.0,
+        state=state,
+        progress=progress,
         files=[TorrentFile(path=p, size=1000) for p in (files or [])],
         tracker_domains=trackers or [],
     )
@@ -45,10 +47,13 @@ def _rule(
     enabled: bool = True,
     destination: str = "/dest",
     conditions: list[tuple[str, str]] | None = None,
+    dry_run: bool = False,
+    require_complete: bool = False,
 ) -> Rule:
     rule = Rule(
         id=id_, name=f"Rule-{id_}", priority=priority,
         enabled=enabled, destination=destination,
+        dry_run=dry_run, require_complete=require_complete,
     )
     rule.conditions = [
         RuleCondition(id=i, rule_id=id_, condition_type=ct, value=val)
@@ -253,3 +258,65 @@ async def test_execute_moves_empty() -> None:
     mock_client = MagicMock()
     results = await execute_moves([], mock_client)
     assert results == []
+
+
+# ---------------------------------------------------------------------------
+# require_complete
+# ---------------------------------------------------------------------------
+
+
+def test_find_matches_require_complete_skips_incomplete() -> None:
+    """Torrents still downloading are skipped when require_complete is set."""
+    rule = _rule(
+        id_=1, conditions=[("extension", ".mkv")], require_complete=True
+    )
+    incomplete = _torrent(hash_="t1", files=["movie.mkv"], progress=50.0)
+    assert find_matches([rule], [incomplete]) == []
+
+
+def test_find_matches_require_complete_allows_finished() -> None:
+    """Fully downloaded torrents pass the require_complete check."""
+    rule = _rule(
+        id_=1, conditions=[("extension", ".mkv")], require_complete=True
+    )
+    complete = _torrent(hash_="t1", files=["movie.mkv"], progress=100.0)
+    matches = find_matches([rule], [complete])
+    assert len(matches) == 1
+
+
+def test_find_matches_require_complete_false_allows_incomplete() -> None:
+    """When require_complete is False (default) incomplete torrents still match."""
+    rule = _rule(id_=1, conditions=[("extension", ".mkv")], require_complete=False)
+    incomplete = _torrent(hash_="t1", files=["movie.mkv"], progress=30.0)
+    matches = find_matches([rule], [incomplete])
+    assert len(matches) == 1
+
+
+# ---------------------------------------------------------------------------
+# dry_run
+# ---------------------------------------------------------------------------
+
+
+async def test_execute_moves_dry_run_skips_rpc() -> None:
+    """Dry-run rules log the intended move without calling move_torrent."""
+    rule = _rule(id_=1, destination="/dest", conditions=[("extension", ".mkv")], dry_run=True)
+    torrent = _torrent(hash_="t1", save_path="/src", files=["movie.mkv"])
+    mock_client = MagicMock()
+    mock_client.move_torrent = AsyncMock()
+
+    results = await execute_moves([(torrent, rule)], mock_client)
+    assert results[0]["status"] == "dry_run"
+    assert results[0]["error_message"] is None
+    mock_client.move_torrent.assert_not_called()
+
+
+async def test_execute_moves_dry_run_false_calls_rpc() -> None:
+    """Non-dry-run rules still call move_torrent normally."""
+    rule = _rule(id_=1, destination="/dest", conditions=[("extension", ".mkv")], dry_run=False)
+    torrent = _torrent(hash_="t1", save_path="/src", files=["movie.mkv"])
+    mock_client = MagicMock()
+    mock_client.move_torrent = AsyncMock()
+
+    results = await execute_moves([(torrent, rule)], mock_client)
+    assert results[0]["status"] == "success"
+    mock_client.move_torrent.assert_called_once_with("t1", "/dest")

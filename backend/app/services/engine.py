@@ -9,6 +9,8 @@ Condition types:
   tracker   — any tracker domain contains the given value (case-insensitive substring)
 
 Idempotency guard: skip if torrent.save_path already equals rule.destination.
+require_complete: if set on a rule, skip torrents that are not fully downloaded.
+dry_run: if set on a rule, log the intended move but skip the actual RPC call.
 """
 from __future__ import annotations
 
@@ -71,6 +73,8 @@ def find_matches(
             if torrent.save_path == rule.destination:
                 # Already in place — skip (idempotency)
                 continue
+            if rule.require_complete and torrent.progress < 100.0:
+                continue
             if evaluate_rule(rule, torrent):
                 matches.append((torrent, rule))
                 matched_hashes.add(torrent.hash)
@@ -99,24 +103,34 @@ async def execute_moves(
             "source_path": torrent.save_path,
             "destination_path": rule.destination,
         }
-        try:
-            await client.move_torrent(torrent.hash, rule.destination)
-            entry["status"] = "success"
+        if rule.dry_run:
+            entry["status"] = "dry_run"
             entry["error_message"] = None
             logger.info(
-                "Moved %r → %r (rule %r)",
+                "[dry-run] Would move %r → %r (rule %r)",
                 torrent.name,
                 rule.destination,
                 rule.name,
             )
-        except Exception as exc:
-            entry["status"] = "error"
-            entry["error_message"] = str(exc)
-            logger.warning(
-                "Failed to move %r (rule %r): %s",
-                torrent.name,
-                rule.name,
-                exc,
-            )
+        else:
+            try:
+                await client.move_torrent(torrent.hash, rule.destination)
+                entry["status"] = "success"
+                entry["error_message"] = None
+                logger.info(
+                    "Moved %r → %r (rule %r)",
+                    torrent.name,
+                    rule.destination,
+                    rule.name,
+                )
+            except Exception as exc:
+                entry["status"] = "error"
+                entry["error_message"] = str(exc)
+                logger.warning(
+                    "Failed to move %r (rule %r): %s",
+                    torrent.name,
+                    rule.name,
+                    exc,
+                )
         results.append(entry)
     return results
