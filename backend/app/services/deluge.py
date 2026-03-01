@@ -262,7 +262,7 @@ class DelugeClient:
                 TorrentInfo(
                     hash=torrent_hash,
                     name=data.get("name", ""),
-                    save_path=data.get("save_path", ""),
+                    save_path=data.get("save_path", "").rstrip("/"),
                     state=data.get("state", ""),
                     progress=float(data.get("progress", 0.0)),
                     files=files,

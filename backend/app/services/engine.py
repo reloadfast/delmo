@@ -70,7 +70,7 @@ def find_matches(
         for torrent in torrents:
             if torrent.hash in matched_hashes:
                 continue
-            if torrent.save_path == rule.destination:
+            if torrent.save_path.rstrip("/") == rule.destination.rstrip("/"):
                 # Already in place — skip (idempotency)
                 continue
             if rule.require_complete and torrent.progress < 100.0:
