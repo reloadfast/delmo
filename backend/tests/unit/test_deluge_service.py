@@ -258,7 +258,9 @@ async def test_get_torrents_single_file_empty_path_fallback() -> None:
 async def test_move_torrent_uses_configured_method() -> None:
     client, mock_rpc = _make_client_with_mock_rpc(version="2.1.1")
     await client.move_torrent("abc123", "/new/path")
-    mock_rpc.call.assert_called_with("core.move_storage", "abc123", "/new/path")
+    # Hash must be passed as a list — bare string causes Deluge to iterate
+    # over characters and raise KeyError on the first character of the hash.
+    mock_rpc.call.assert_called_with("core.move_storage", ["abc123"], "/new/path")
 
 
 async def test_get_status_connected() -> None:

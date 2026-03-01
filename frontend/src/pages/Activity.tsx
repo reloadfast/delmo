@@ -53,12 +53,16 @@ const COLUMNS: Column<MoveLog>[] = [
     key: "status",
     header: "Status",
     render: (r) => (
-      <div>
+      <div
+        className={r.error_message ? "cursor-pointer select-none" : undefined}
+        title={r.error_message ? "Click to copy full error" : undefined}
+        onClick={
+          r.error_message ? () => void navigator.clipboard.writeText(r.error_message!) : undefined
+        }
+      >
         <Badge variant={statusVariant(r.status)}>{r.status}</Badge>
         {r.error_message && (
-          <p className="text-xs text-accent-danger mt-1 max-w-xs" title={r.error_message}>
-            {r.error_message.length > 80 ? r.error_message.slice(0, 80) + "…" : r.error_message}
-          </p>
+          <p className="text-xs text-accent-danger mt-1 max-w-xs line-clamp-2">{r.error_message}</p>
         )}
       </div>
     ),

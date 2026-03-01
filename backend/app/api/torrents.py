@@ -7,7 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.schemas.torrent import TorrentFileSchema, TorrentSchema
-from app.services.deluge import _TORRENT_KEYS, DelugeClient, TorrentInfo, _decode_keys
+from app.services.deluge import (
+    _TORRENT_KEYS,
+    DelugeClient,
+    TorrentInfo,
+    _decode_keys,
+    _extract_domain,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/torrents", tags=["torrents"])
@@ -77,11 +83,18 @@ async def list_torrents(db: AsyncSession = Depends(get_db)) -> list[TorrentSchem
 
 
 @router.get("/debug/raw", response_model=list[dict[str, Any]], include_in_schema=False)
-async def raw_torrent_debug(db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
+async def raw_torrent_debug(
+    torrent_hash: str | None = None,
+    db: AsyncSession = Depends(get_db),
+) -> list[dict[str, Any]]:
     """
-    Return the first 3 torrents' raw decoded data from Deluge, before normalisation.
-    Used to diagnose file/tracker structure differences across Deluge versions.
+    Return raw decoded Deluge data for up to 3 torrents (or a specific hash).
+    Also includes computed tracker_domains for easy comparison with rule matching.
     NOT included in the OpenAPI schema.
+
+    Usage:
+      /api/torrents/debug/raw                                  — first 3 torrents
+      /api/torrents/debug/raw?torrent_hash=9ac4c70e...         — specific torrent
     """
     settings = await _settings_dict(db)
     host = settings.get("deluge_host", "")
@@ -114,8 +127,22 @@ async def raw_torrent_debug(db: AsyncSession = Depends(get_db)) -> list[dict[str
             msg = msg.replace(password, "***")
         raise HTTPException(status_code=503, detail=msg) from exc
 
-    sample = list(raw.items())[:3]
+    if torrent_hash:
+        items = [(h, d) for h, d in raw.items() if h.lower() == torrent_hash.lower()]
+    else:
+        items = list(raw.items())[:3]
+
     return [
-        {"hash": h, **{k: v for k, v in d.items() if k != "password"}}
-        for h, d in sample
+        {
+            "hash": h,
+            "computed_tracker_domains": list(
+                {
+                    _extract_domain(t.get("url", ""))
+                    for t in (d.get("trackers") or [])
+                    if t.get("url")
+                }
+            ),
+            **{k: v for k, v in d.items() if k != "password"},
+        }
+        for h, d in items
     ]
