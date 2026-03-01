@@ -21,8 +21,12 @@ async def test_init_db_runs_migrations(db: AsyncSession) -> None:
 
 async def test_seed_defaults_idempotent() -> None:
     """seed_defaults() inserts DEFAULT_SETTINGS keys; safe to call multiple times."""
-    from app.core.database import AsyncSessionLocal
+    from app.core.database import AsyncSessionLocal, Base, engine
     from sqlalchemy import select
+
+    # Ensure the file-based engine has the required tables (self-contained setup).
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
     # First call: populates keys
     await seed_defaults()
