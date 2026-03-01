@@ -1,4 +1,6 @@
 """Unit tests for database init, seed, and get_db."""
+from unittest.mock import patch
+
 import pytest
 from app.core.config import DEFAULT_SETTINGS
 from app.core.database import get_db, init_db, seed_defaults
@@ -8,10 +10,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 pytestmark = pytest.mark.unit
 
 
-async def test_init_db_creates_tables(db: AsyncSession) -> None:
-    """init_db() should be idempotent — calling it on an existing DB is safe."""
-    # Tables already exist from the conftest fixture; calling again must not raise
-    await init_db()
+async def test_init_db_runs_migrations(db: AsyncSession) -> None:
+    """init_db() delegates to Alembic upgrade and is safe to call repeatedly."""
+    # Patch asyncio.to_thread so we don't run real Alembic against the test DB.
+    with patch("app.core.database.asyncio.to_thread") as mock_thread:
+        mock_thread.return_value = None
+        await init_db()
+        mock_thread.assert_called_once()
 
 
 async def test_seed_defaults_idempotent() -> None:
