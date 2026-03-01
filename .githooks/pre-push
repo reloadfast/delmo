@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Runs lint + type-check before every push.
+# Install once with: make install-hooks
+set -e
+echo "pre-push: running lint and type-check..."
+make lint type-check

@@ -10,13 +10,14 @@ import { logsApi, type MoveLog } from "../lib/api";
 
 const PAGE_SIZE = 50;
 
-type StatusFilter = "all" | "success" | "error" | "skipped";
+type StatusFilter = "all" | "success" | "error" | "skipped" | "dry_run";
 
 const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
   { label: "All", value: "all" },
   { label: "Success", value: "success" },
   { label: "Error", value: "error" },
   { label: "Skipped", value: "skipped" },
+  { label: "Dry Run", value: "dry_run" },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -24,6 +25,7 @@ const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
 function statusVariant(status: string): BadgeVariant {
   if (status === "success") return "positive";
   if (status === "error") return "danger";
+  if (status === "dry_run") return "warning";
   return "neutral";
 }
 
