@@ -8,6 +8,7 @@ from app.models.rule import Rule, RuleCondition
 from app.services.deluge import TorrentFile, TorrentInfo
 from app.services.engine import (
     _matches_extension,
+    _matches_label,
     _matches_tracker,
     evaluate_rule,
     execute_moves,
@@ -29,6 +30,7 @@ def _torrent(
     trackers: list[str] | None = None,
     progress: float = 100.0,
     state: str = "Seeding",
+    label: str = "",
 ) -> TorrentInfo:
     return TorrentInfo(
         hash=hash_,
@@ -38,6 +40,7 @@ def _torrent(
         progress=progress,
         files=[TorrentFile(path=p, size=1000) for p in (files or [])],
         tracker_domains=trackers or [],
+        label=label,
     )
 
 
@@ -104,6 +107,28 @@ def test_matches_tracker(trackers: list[str], needle: str, expected: bool) -> No
 
 
 # ---------------------------------------------------------------------------
+# _matches_label
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "label,needle,expected",
+    [
+        ("linux", "linux", True),
+        ("Linux", "linux", True),       # case-insensitive
+        ("linux", "Linux", True),       # case-insensitive reverse
+        ("linux", "lin", False),        # no substring match — exact only
+        ("", "linux", False),           # no label assigned
+        ("linux", "", False),           # empty needle never matches
+        ("movies", "linux", False),
+    ],
+)
+def test_matches_label(label: str, needle: str, expected: bool) -> None:
+    t = _torrent(label=label)
+    assert _matches_label(t, needle) is expected
+
+
+# ---------------------------------------------------------------------------
 # evaluate_rule
 # ---------------------------------------------------------------------------
 
@@ -136,6 +161,25 @@ def test_evaluate_rule_or_logic() -> None:
 def test_evaluate_rule_no_match() -> None:
     rule = _rule(conditions=[("extension", ".mkv"), ("tracker", "example.com")])
     t = _torrent(files=["audio.flac"], trackers=["nope.com"])
+    assert evaluate_rule(rule, t) is False
+
+
+def test_evaluate_rule_label_match() -> None:
+    rule = _rule(conditions=[("label", "linux")])
+    t = _torrent(label="linux")
+    assert evaluate_rule(rule, t) is True
+
+
+def test_evaluate_rule_label_no_match() -> None:
+    rule = _rule(conditions=[("label", "linux")])
+    t = _torrent(label="movies")
+    assert evaluate_rule(rule, t) is False
+
+
+def test_evaluate_rule_label_plugin_absent_no_match() -> None:
+    """When the Label plugin is inactive torrent.label is empty — never matches."""
+    rule = _rule(conditions=[("label", "linux")])
+    t = _torrent(label="")  # plugin absent or torrent unlabelled
     assert evaluate_rule(rule, t) is False
 
 

@@ -44,6 +44,7 @@ class TorrentInfo:
     progress: float
     files: list[TorrentFile] = field(default_factory=list)
     tracker_domains: list[str] = field(default_factory=list)
+    label: str = ""  # populated when Deluge Label plugin is active
 
 
 @dataclass
@@ -138,6 +139,7 @@ _TORRENT_KEYS = [
     "trackers",
     "state",
     "progress",
+    "label",  # populated when the Deluge Label plugin is active; absent otherwise
 ]
 
 
@@ -162,6 +164,7 @@ class DelugeClient:
         self._rpc: Any = None  # deluge_client.DelugeRPCClient instance
         self._daemon_version: str | None = None
         self._move_method: str = "core.move_storage"
+        self._label_plugin_available: bool | None = None
 
     # ── Connection lifecycle ─────────────────────────────────────────────────
 
@@ -253,6 +256,26 @@ class DelugeClient:
     def move_method(self) -> str:
         return self._move_method
 
+    @property
+    def label_plugin_available(self) -> bool | None:
+        """None until check_label_plugin() has been called."""
+        return self._label_plugin_available
+
+    async def check_label_plugin(self) -> bool:
+        """
+        Probe whether the Deluge Label plugin is active.
+
+        Calls ``label.get_labels()`` — a method registered exclusively by the
+        Label plugin.  Returns True if the call succeeds, False on any error
+        (MethodNotFound, AttributeError, etc.).  Result is cached on the instance.
+        """
+        try:
+            await self._call("label.get_labels")
+            self._label_plugin_available = True
+        except Exception:
+            self._label_plugin_available = False
+        return self._label_plugin_available
+
     async def get_status(self) -> ConnectionStatus:
         """Check liveness and return a ConnectionStatus."""
         if not self.is_connected():
@@ -303,6 +326,7 @@ class DelugeClient:
                     progress=float(data.get("progress", 0.0)),
                     files=files,
                     tracker_domains=tracker_domains,
+                    label=data.get("label", ""),
                 )
             )
         return results

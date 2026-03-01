@@ -40,6 +40,7 @@ export interface ConnectionStatus {
   connected: boolean;
   daemon_version: string | null;
   error: string | null;
+  label_plugin_available: boolean | null;
 }
 
 export interface ConnectionTestPayload {
@@ -52,6 +53,7 @@ export interface ConnectionTestPayload {
 export const connectionApi = {
   test: (payload: ConnectionTestPayload) =>
     api.post<ConnectionStatus>("/api/connection/test", payload),
+  status: () => api.get<ConnectionStatus>("/api/connection/status"),
 };
 
 // ── Scheduler ─────────────────────────────────────────────────────────────────
@@ -80,7 +82,7 @@ export const dashboardApi = {
 
 export interface RuleCondition {
   id: number;
-  condition_type: "extension" | "tracker";
+  condition_type: "extension" | "tracker" | "label";
   value: string;
 }
 
@@ -96,7 +98,7 @@ export interface Rule {
 }
 
 export interface ConditionInput {
-  condition_type: "extension" | "tracker";
+  condition_type: "extension" | "tracker" | "label";
   value: string;
 }
 

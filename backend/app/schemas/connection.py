@@ -5,6 +5,7 @@ class ConnectionStatusResponse(BaseModel):
     connected: bool
     daemon_version: str | None = None
     error: str | None = None
+    label_plugin_available: bool | None = None
 
 
 class ConnectionTestRequest(BaseModel):
