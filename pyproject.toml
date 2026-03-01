@@ -8,7 +8,7 @@ include = ["app*"]
 
 [project]
 name = "delmo"
-version = "0.1.0"
+version = "0.2.0"
 description = "Automatic torrent data mover via Deluge RPC"
 requires-python = ">=3.12"
 dependencies = [

@@ -195,9 +195,38 @@ The application version must always be readable in the UI to aid troubleshooting
 - Style: secondary / muted text (`color: var(--color-text-secondary)`)
 - Size: one step below body copy (`text-xs` / `0.75rem`)
 - Do not use brand accent colours — the version must be present but visually unobtrusive
-- Format: `v` prefix + semver string (e.g., `v0.1.0`)
+- Format: `v` prefix + semver string (e.g., `v0.2.0`)
 
 **Accessibility:** contrast ratio ≥ 4.5:1 against its background (WCAG AA minimum).
+
+---
+
+## Versioning
+
+The version is defined in **two files that must always be kept in sync**:
+- `pyproject.toml` → `[project] version = "x.y.z"` (backend source of truth; read at runtime via `importlib.metadata`)
+- `frontend/package.json` → `"version": "x.y.z"` (frontend source of truth; read at build time via `import { version }`)
+
+**Never hardcode the version string anywhere else in the codebase.**
+
+**When to bump** (follow semver):
+- `patch` (`0.2.x`) — bug fixes only, no new UI or API surface
+- `minor` (`0.x.0`) — new features, new API endpoints, meaningful UI additions
+- `major` (`x.0.0`) — breaking changes to the public API or Docker interface
+
+**How to bump** — update both files atomically in the same commit, then tag:
+```
+# 1. Edit pyproject.toml  →  version = "0.3.0"
+# 2. Edit frontend/package.json via npm (also updates package-lock.json):
+cd frontend && npm version 0.3.0 --no-git-tag-version
+# 3. Commit:
+git add pyproject.toml frontend/package.json frontend/package-lock.json
+git commit -m "chore: bump version to 0.3.0"
+# 4. Tag (on main after merge):
+git tag v0.3.0
+```
+
+Every PR that ships user-visible features or meaningful bug fixes **must** include a version bump commit. Purely internal chores (CI tweaks, tests, docs) may skip the bump.
 
 ---
 

@@ -1,3 +1,4 @@
+import importlib.metadata
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -46,7 +47,7 @@ async def lifespan(app: FastAPI) -> Any:
 
 app = FastAPI(
     title="delmo",
-    version="0.1.0",
+    version=importlib.metadata.version("delmo"),
     description="Automatic torrent data mover via Deluge RPC",
     lifespan=lifespan,
 )
