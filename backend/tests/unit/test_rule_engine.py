@@ -375,3 +375,34 @@ async def test_execute_moves_dry_run_false_calls_rpc() -> None:
     results = await execute_moves([(torrent, rule)], mock_client)
     assert results[0]["status"] == "success"
     mock_client.move_torrent.assert_called_once_with("t1", "/dest")
+
+
+# ---------------------------------------------------------------------------
+# pause_if_downloading
+# ---------------------------------------------------------------------------
+
+
+def test_pause_if_downloading_skips_when_any_torrent_downloading() -> None:
+    """When pause_if_downloading=True and a torrent is Downloading, return empty."""
+    rule = _rule(id_=1, conditions=[("extension", ".mkv")])
+    seeding = _torrent(hash_="t1", files=["movie.mkv"], state="Seeding")
+    downloading = _torrent(hash_="t2", files=["other.mkv"], state="Downloading")
+    matches = find_matches([rule], [seeding, downloading], pause_if_downloading=True)
+    assert matches == []
+
+
+def test_pause_if_downloading_proceeds_when_none_downloading() -> None:
+    """When pause_if_downloading=True but no torrent is Downloading, rules run normally."""
+    rule = _rule(id_=1, conditions=[("extension", ".mkv")])
+    seeding = _torrent(hash_="t1", files=["movie.mkv"], state="Seeding")
+    paused = _torrent(hash_="t2", files=["other.mkv"], state="Paused")
+    matches = find_matches([rule], [seeding, paused], pause_if_downloading=True)
+    assert len(matches) == 2
+
+
+def test_pause_if_downloading_disabled_allows_match_while_downloading() -> None:
+    """When pause_if_downloading=False (default), Downloading state does not block rules."""
+    rule = _rule(id_=1, conditions=[("extension", ".mkv")])
+    downloading = _torrent(hash_="t1", files=["movie.mkv"], state="Downloading")
+    matches = find_matches([rule], [downloading])
+    assert len(matches) == 1

@@ -63,7 +63,10 @@ def evaluate_rule(rule: Rule, torrent: TorrentInfo) -> bool:
 
 
 def find_matches(
-    rules: list[Rule], torrents: list[TorrentInfo]
+    rules: list[Rule],
+    torrents: list[TorrentInfo],
+    *,
+    pause_if_downloading: bool = False,
 ) -> list[tuple[TorrentInfo, Rule]]:
     """
     Return a list of (torrent, rule) pairs where the rule matches the torrent.
@@ -71,7 +74,17 @@ def find_matches(
     Rules are evaluated in priority order (lowest first). Each torrent is matched
     against only the first matching rule (first-match wins). Torrents already at
     the rule destination are skipped (idempotency guard).
+
+    If *pause_if_downloading* is True and any torrent is currently in
+    "Downloading" state, the entire engine run is skipped and an empty list is
+    returned.
     """
+    if pause_if_downloading and any(t.state == "Downloading" for t in torrents):
+        logger.info(
+            "pause_if_downloading is enabled and a torrent is currently downloading — skipping rule evaluation."
+        )
+        return []
+
     sorted_rules = sorted(
         [r for r in rules if r.enabled], key=lambda r: (r.priority, r.id)
     )

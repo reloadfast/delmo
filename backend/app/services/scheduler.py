@@ -110,7 +110,11 @@ async def run_poll_cycle() -> None:
         await client.connect()
         torrents = await client.get_torrents()
         rules = await _load_rules()
-        matches = find_matches(rules, torrents)
+        matches = find_matches(
+            rules,
+            torrents,
+            pause_if_downloading=settings.get("pause_if_downloading", "false") == "true",
+        )
         if matches:
             logger.info("Rule engine found %d move(s) to execute.", len(matches))
         results = await execute_moves(matches, client)

@@ -15,6 +15,7 @@ import {
   type RuleCreate,
   connectionApi,
   rulesApi,
+  settingsApi,
 } from "../lib/api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -525,6 +526,20 @@ export function RulesPage() {
     queryFn: rulesApi.list,
   });
 
+  const { data: settingsData } = useQuery({
+    queryKey: ["settings"],
+    queryFn: settingsApi.get,
+    staleTime: 30_000,
+  });
+  const pauseIfDownloading =
+    (settingsData?.data as Record<string, string> | undefined)?.pause_if_downloading === "true";
+
+  const pauseMutation = useMutation({
+    mutationFn: (enabled: boolean) =>
+      settingsApi.patch({ pause_if_downloading: enabled ? "true" : "false" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["settings"] }),
+  });
+
   const [editRule, setEditRule] = useState<Rule | "new" | null>(null);
   const [deleteRule, setDeleteRule] = useState<Rule | null>(null);
   const [previewRule, setPreviewRule] = useState<Rule | null>(null);
@@ -572,6 +587,20 @@ export function RulesPage() {
 
   return (
     <>
+      {/* Pause-if-downloading global setting */}
+      <div className="flex items-center justify-between rounded-lg border border-border bg-surface px-4 py-3 mb-5">
+        <div>
+          <p className="text-sm font-medium text-text-primary">Pause rules while downloading</p>
+          <p className="text-xs text-text-secondary">
+            Skip all rule evaluation when any torrent is actively downloading.
+          </p>
+        </div>
+        <Toggle
+          checked={pauseIfDownloading}
+          onCheckedChange={(v) => pauseMutation.mutate(v)}
+        />
+      </div>
+
       <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-text-secondary">
           Rules are evaluated in priority order. First match wins.
