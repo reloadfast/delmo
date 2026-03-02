@@ -113,7 +113,9 @@ async def run_poll_cycle() -> None:
         matches = find_matches(
             rules,
             torrents,
-            pause_if_downloading=settings.get("pause_if_downloading", "false") == "true",
+            pause_if_downloading=(
+                settings.get("pause_if_downloading", "false") == "true"
+            ),
         )
         if matches:
             logger.info("Rule engine found %d move(s) to execute.", len(matches))

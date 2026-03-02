@@ -81,7 +81,8 @@ def find_matches(
     """
     if pause_if_downloading and any(t.state == "Downloading" for t in torrents):
         logger.info(
-            "pause_if_downloading is enabled and a torrent is currently downloading — skipping rule evaluation."
+            "pause_if_downloading is enabled and a torrent is downloading"
+            " — skipping rule evaluation."
         )
         return []
 

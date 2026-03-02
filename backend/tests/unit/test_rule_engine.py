@@ -392,7 +392,7 @@ def test_pause_if_downloading_skips_when_any_torrent_downloading() -> None:
 
 
 def test_pause_if_downloading_proceeds_when_none_downloading() -> None:
-    """When pause_if_downloading=True but no torrent is Downloading, rules run normally."""
+    """pause_if_downloading=True but no Downloading torrent — rules run normally."""
     rule = _rule(id_=1, conditions=[("extension", ".mkv")])
     seeding = _torrent(hash_="t1", files=["movie.mkv"], state="Seeding")
     paused = _torrent(hash_="t2", files=["other.mkv"], state="Paused")
@@ -401,7 +401,7 @@ def test_pause_if_downloading_proceeds_when_none_downloading() -> None:
 
 
 def test_pause_if_downloading_disabled_allows_match_while_downloading() -> None:
-    """When pause_if_downloading=False (default), Downloading state does not block rules."""
+    """pause_if_downloading=False (default): Downloading state does not block rules."""
     rule = _rule(id_=1, conditions=[("extension", ".mkv")])
     downloading = _torrent(hash_="t1", files=["movie.mkv"], state="Downloading")
     matches = find_matches([rule], [downloading])
