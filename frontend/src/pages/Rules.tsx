@@ -595,10 +595,7 @@ export function RulesPage() {
             Skip all rule evaluation when any torrent is actively downloading.
           </p>
         </div>
-        <Toggle
-          checked={pauseIfDownloading}
-          onCheckedChange={(v) => pauseMutation.mutate(v)}
-        />
+        <Toggle checked={pauseIfDownloading} onCheckedChange={(v) => pauseMutation.mutate(v)} />
       </div>
 
       <div className="flex items-center justify-between mb-6">
