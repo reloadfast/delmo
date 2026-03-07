@@ -227,8 +227,7 @@ function SchedulerCard({ settings }: { settings: Record<string, string> }) {
   });
 
   const pauseMutation = useMutation({
-    mutationFn: (paused: boolean) =>
-      settingsApi.patch({ rules_paused: paused ? "true" : "false" }),
+    mutationFn: (paused: boolean) => settingsApi.patch({ rules_paused: paused ? "true" : "false" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["settings"] }),
   });
 
