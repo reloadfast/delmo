@@ -102,10 +102,17 @@ function LivePreview({ conditions }: { conditions: ConditionInput[] }) {
         <p className="text-accent-danger text-xs">Deluge unreachable — preview unavailable.</p>
       )}
       {data && (
-        <p className="text-text-secondary">
-          <span className="text-text-primary font-medium">{data.matched.length}</span> of{" "}
-          {data.total_torrents} torrent{data.total_torrents !== 1 ? "s" : ""} match.
-        </p>
+        <>
+          <p className="text-text-secondary">
+            <span className="text-text-primary font-medium">{data.matched.length}</span> of{" "}
+            {data.total_torrents} torrent{data.total_torrents !== 1 ? "s" : ""} match.
+          </p>
+          {data.matched.length > 5 && (
+            <p className="text-xs text-accent-warning mt-1">
+              ⚠ This rule will affect more than 5 torrents.
+            </p>
+          )}
+        </>
       )}
     </div>
   );
@@ -494,6 +501,11 @@ function PreviewModal({ rule, onClose }: { rule: Rule | null; onClose: () => voi
                   {data.total_torrents} torrent
                   {data.total_torrents !== 1 ? "s" : ""} match.
                 </p>
+                {data.matched.length > 5 && (
+                  <p className="text-xs text-accent-warning mb-3">
+                    ⚠ This rule will affect more than 5 torrents.
+                  </p>
+                )}
                 {data.matched.length === 0 ? (
                   <p className="text-sm text-text-secondary italic">No matches.</p>
                 ) : (
