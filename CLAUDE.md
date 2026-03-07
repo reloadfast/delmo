@@ -266,7 +266,7 @@ Multiple Claude agents may work on this repo simultaneously on separate branches
 
 ### Rule Engine Logic
 - Rules are evaluated in priority order (lower number = higher priority)
-- A rule matches if ANY of its conditions match (OR logic within a rule)
+- A rule matches if ALL of its conditions match (AND logic within a rule)
 - Condition types:
   - `extension`: matches if any file in the torrent has the specified extension (e.g., `.mkv`)
   - `tracker`: matches if any tracker URL's domain contains/matches the specified value

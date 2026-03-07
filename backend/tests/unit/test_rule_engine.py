@@ -151,11 +151,18 @@ def test_evaluate_rule_no_conditions() -> None:
     assert evaluate_rule(rule, t) is False
 
 
-def test_evaluate_rule_or_logic() -> None:
-    """Either condition matching returns True."""
+def test_evaluate_rule_and_logic_all_match() -> None:
+    """All conditions must match for the rule to return True."""
+    rule = _rule(conditions=[("extension", ".mkv"), ("tracker", "example.com")])
+    t = _torrent(files=["movie.mkv"], trackers=["tracker.example.com"])
+    assert evaluate_rule(rule, t) is True
+
+
+def test_evaluate_rule_and_logic_partial_match() -> None:
+    """Only one of two conditions matching returns False (AND logic)."""
     rule = _rule(conditions=[("extension", ".mkv"), ("tracker", "other.com")])
     t = _torrent(files=["movie.mkv"], trackers=["nope.com"])
-    assert evaluate_rule(rule, t) is True
+    assert evaluate_rule(rule, t) is False
 
 
 def test_evaluate_rule_no_match() -> None:

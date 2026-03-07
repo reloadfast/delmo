@@ -2,7 +2,7 @@
 Rule evaluation engine.
 
 Evaluates rules against a list of TorrentInfo objects and returns (torrent, rule)
-pairs that match. A rule matches if ANY of its conditions match (OR logic).
+pairs that match. A rule matches if ALL of its conditions match (AND logic).
 
 Condition types:
   extension — any file in the torrent has the given extension (e.g. ".mkv")
@@ -48,18 +48,20 @@ def _matches_label(torrent: TorrentInfo, value: str) -> bool:
 
 
 def evaluate_rule(rule: Rule, torrent: TorrentInfo) -> bool:
-    """Return True if *torrent* satisfies at least one condition of *rule*."""
+    """Return True if *torrent* satisfies all conditions of *rule* (AND logic)."""
+    if not rule.conditions:
+        return False
     for condition in rule.conditions:
         if condition.condition_type == "extension":
-            if _matches_extension(torrent, condition.value):
-                return True
+            if not _matches_extension(torrent, condition.value):
+                return False
         elif condition.condition_type == "tracker":
-            if _matches_tracker(torrent, condition.value):
-                return True
+            if not _matches_tracker(torrent, condition.value):
+                return False
         elif condition.condition_type == "label":
-            if _matches_label(torrent, condition.value):
-                return True
-    return False
+            if not _matches_label(torrent, condition.value):
+                return False
+    return True
 
 
 def find_matches(
