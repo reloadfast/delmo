@@ -95,8 +95,8 @@ FastAPI + Uvicorn
         <ul className="list-disc list-inside space-y-1 text-text-secondary">
           <li>The rule engine walks rules from lowest to highest priority.</li>
           <li>
-            A rule matches if <em className="text-text-primary">all</em> of its conditions match (AND
-            logic).
+            A rule matches if <em className="text-text-primary">all</em> of its conditions match
+            (AND logic).
           </li>
           <li>Each torrent is matched against only the first matching rule (first-match wins).</li>
           <li>
