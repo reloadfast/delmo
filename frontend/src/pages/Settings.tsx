@@ -4,6 +4,7 @@ import { Eye, EyeOff, Play } from "lucide-react";
 import { Badge } from "../components/ui/Badge";
 import { Card, CardHeader, CardTitle } from "../components/ui/Card";
 import { Skeleton } from "../components/ui/Skeleton";
+import { Toggle } from "../components/ui/Toggle";
 import { cn } from "../lib/cn";
 import { connectionApi, schedulerApi, settingsApi, type ConnectionStatus } from "../lib/api";
 
@@ -77,7 +78,8 @@ function ConnectionCard({ settings }: { settings: Record<string, string> }) {
       host: settings.deluge_host ?? "",
       port: settings.deluge_port ?? "58846",
       username: settings.deluge_username ?? "",
-      password: settings.deluge_password ?? "",
+      // Password is never returned by the API — leave blank; only send on change
+      password: "",
     });
   }, [settings]);
 
@@ -90,13 +92,16 @@ function ConnectionCard({ settings }: { settings: Record<string, string> }) {
   }
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      settingsApi.patch({
+    mutationFn: () => {
+      const updates: Record<string, string> = {
         deluge_host: form.host,
         deluge_port: form.port,
         deluge_username: form.username,
-        deluge_password: form.password,
-      }),
+      };
+      // Only send password when the user explicitly typed one
+      if (form.password !== "") updates.deluge_password = form.password;
+      return settingsApi.patch(updates);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["settings"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
@@ -221,6 +226,12 @@ function SchedulerCard({ settings }: { settings: Record<string, string> }) {
     },
   });
 
+  const pauseMutation = useMutation({
+    mutationFn: (paused: boolean) =>
+      settingsApi.patch({ rules_paused: paused ? "true" : "false" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["settings"] }),
+  });
+
   const runNowMutation = useMutation({
     mutationFn: schedulerApi.runNow,
     onSuccess: () => {
@@ -232,6 +243,8 @@ function SchedulerCard({ settings }: { settings: Record<string, string> }) {
       setTimeout(() => setRunFeedback(""), 3000);
     },
   });
+
+  const isPaused = settings.rules_paused === "true";
 
   return (
     <Card>
@@ -263,6 +276,20 @@ function SchedulerCard({ settings }: { settings: Record<string, string> }) {
           </div>
           <p className="text-xs text-text-secondary">Minimum: 10 seconds.</p>
         </Field>
+
+        <div className="flex items-center justify-between py-1 border-t border-border">
+          <div>
+            <p className="text-sm font-medium text-text-primary">Pause Rules</p>
+            <p className="text-xs text-text-secondary mt-0.5">
+              Suspend all rule evaluation until re-enabled.
+            </p>
+          </div>
+          <Toggle
+            checked={isPaused}
+            onCheckedChange={(v) => pauseMutation.mutate(v)}
+            disabled={pauseMutation.isPending}
+          />
+        </div>
 
         <div className="flex items-center gap-3 pt-1">
           <button

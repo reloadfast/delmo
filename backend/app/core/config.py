@@ -17,4 +17,5 @@ DEFAULT_SETTINGS: dict[str, str] = {
     "deluge_password": "",
     "polling_interval_seconds": "300",
     "pause_if_downloading": "false",
+    "rules_paused": "false",
 }

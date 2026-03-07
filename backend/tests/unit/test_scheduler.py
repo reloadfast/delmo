@@ -84,7 +84,49 @@ async def test_reschedule_when_running() -> None:
 # ---------------------------------------------------------------------------
 
 
-async def test_run_poll_cycle_no_host() -> None:
+async def test_run_poll_cycle_rules_paused() -> None:
+    """Cycle exits early when rules_paused is true."""
+    settings = {
+        "deluge_host": "192.168.1.10",
+        "deluge_port": "58846",
+        "rules_paused": "true",
+    }
+    with patch.object(sched_module, "_load_settings", AsyncMock(return_value=settings)):
+        await run_poll_cycle()  # should return without connecting
+
+
+async def test_run_poll_cycle_rules_paused_false_continues() -> None:
+    """Cycle proceeds normally when rules_paused is false."""
+    from app.services.deluge import TorrentInfo
+
+    settings = {
+        "deluge_host": "192.168.1.10",
+        "deluge_port": "58846",
+        "deluge_username": "u",
+        "deluge_password": "p",
+        "rules_paused": "false",
+    }
+    mock_torrent = TorrentInfo(
+        hash="abc", name="Movie", save_path="/dl",
+        state="Seeding", progress=100.0, files=[], tracker_domains=[],
+    )
+    mock_client = MagicMock()
+    mock_client.connect = AsyncMock()
+    mock_client.disconnect = AsyncMock()
+    mock_client.get_torrents = AsyncMock(return_value=[mock_torrent])
+
+    with (
+        patch.object(sched_module, "_load_settings", AsyncMock(return_value=settings)),
+        patch.object(sched_module, "_load_rules", AsyncMock(return_value=[])),
+        patch.object(sched_module, "_write_logs", AsyncMock()),
+        patch("app.services.scheduler.DelugeClient", return_value=mock_client),
+    ):
+        await run_poll_cycle()
+
+    mock_client.connect.assert_called_once()
+
+
+
     """Cycle exits early when Deluge host is not configured."""
     settings = {"deluge_host": "", "deluge_port": "58846"}
     with patch.object(sched_module, "_load_settings", AsyncMock(return_value=settings)):

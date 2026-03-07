@@ -93,6 +93,10 @@ async def run_poll_cycle() -> None:
         logger.debug("Deluge host not configured — skipping poll cycle.")
         return
 
+    if settings.get("rules_paused", "false") == "true":
+        logger.info("Rules are paused — skipping poll cycle.")
+        return
+
     port_str = settings.get("deluge_port", "58846")
     try:
         port = int(port_str)
