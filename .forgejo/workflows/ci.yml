@@ -1,1 +1,150 @@
-bmFtZTogQ0kKCm9uOgogIHB1c2g6CiAgICBicmFuY2hlczogW21haW5dCiAgICB0YWdzOiBbInYqLiouKiJdCiAgcHVsbF9yZXF1ZXN0OgoKam9iczoKICBiYWNrZW5kOgogICAgbmFtZTogQmFja2VuZCAobGludCDCtyB0eXBlLWNoZWNrIMK3IHRlc3QpCiAgICBydW5zLW9uOiB1YnVudHUtbGF0ZXN0CiAgICBkZWZhdWx0czoKICAgICAgcnVuOgogICAgICAgIHdvcmtpbmctZGlyZWN0b3J5OiAuCgogICAgc3RlcHM6CiAgICAgIC0gdXNlczogYWN0aW9ucy9jaGVja291dEB2NAoKICAgICAgLSB1c2VzOiBhY3Rpb25zL3NldHVwLXB5dGhvbkB2NQogICAgICAgIHdpdGg6CiAgICAgICAgICBweXRob24tdmVyc2lvbjogIjMuMTQiCiAgICAgICAgICBjYWNoZTogcGlwCgogICAgICAtIG5hbWU6IEluc3RhbGwgZGVwZW5kZW5jaWVzCiAgICAgICAgcnVuOiBwaXAgaW5zdGFsbCAtZSAiLltkZXZdIgoKICAgICAgLSBuYW1lOiBMaW50IChSdWZmKQogICAgICAgIHJ1bjogcnVmZiBjaGVjayBiYWNrZW5kLwoKICAgICAgLSBuYW1lOiBUeXBlLWNoZWNrIChteXB5KQogICAgICAgIHJ1bjogbXlweSBiYWNrZW5kL2FwcC8KCiAgICAgIC0gbmFtZTogVGVzdCArIGNvdmVyYWdlCiAgICAgICAgcnVuOiBweXRlc3QgLS1jb3Y9YmFja2VuZC9hcHAgLS1jb3YtcmVwb3J0PXhtbCAtLWNvdi1mYWlsLXVuZGVyPTgwCiAgICAgICAgZW52OgogICAgICAgICAgREVMTU9fREFUQV9ESVI6IC90bXAvZGVsbW8tdGVzdAoKICAgICAgLSBuYW1lOiBTZWN1cml0eSBhdWRpdCAocGlwLWF1ZGl0KQogICAgICAgIHJ1bjogfAogICAgICAgICAgcGlwIGluc3RhbGwgcGlwLWF1ZGl0CiAgICAgICAgICAjIENWRS0yMDI2LTQ1Mzk6IHB5Z21lbnRzIFJlRG9TIOKAlCBubyBwYXRjaGVkIHZlcnNpb24gYXZhaWxhYmxlIHlldAogICAgICAgICAgcGlwLWF1ZGl0IC0tZGVzYyAtLWlnbm9yZS12dWxuIENWRS0yMDI2LTQ1MzkKCiAgZnJvbnRlbmQ6CiAgICBuYW1lOiBGcm9udGVuZCAobGludCDCtyB0eXBlLWNoZWNrIMK3IHRlc3QpCiAgICBydW5zLW9uOiB1YnVudHUtbGF0ZXN0CiAgICBkZWZhdWx0czoKICAgICAgcnVuOgogICAgICAgIHdvcmtpbmctZGlyZWN0b3J5OiBmcm9udGVuZAoKICAgIHN0ZXBzOgogICAgICAtIHVzZXM6IGFjdGlvbnMvY2hlY2tvdXRAdjQKCiAgICAgIC0gdXNlczogYWN0aW9ucy9zZXR1cC1ub2RlQHY0CiAgICAgICAgd2l0aDoKICAgICAgICAgIG5vZGUtdmVyc2lvbjogIjIyIgogICAgICAgICAgY2FjaGU6IG5wbQogICAgICAgICAgY2FjaGUtZGVwZW5kZW5jeS1wYXRoOiBmcm9udGVuZC9wYWNrYWdlLWxvY2suanNvbgoKICAgICAgLSBuYW1lOiBJbnN0YWxsIGRlcGVuZGVuY2llcwogICAgICAgIHJ1bjogbnBtIGNpIC0tZnJvemVuLWxvY2tmaWxlCgogICAgICAtIG5hbWU6IExpbnQgKEVTTGludCkKICAgICAgICBydW46IG5wbSBydW4gbGludAoKICAgICAgLSBuYW1lOiBGb3JtYXQgY2hlY2sgKFByZXR0aWVyKQogICAgICAgIHJ1bjogbnBtIHJ1biBmb3JtYXQ6Y2hlY2sKCiAgICAgIC0gbmFtZTogVHlwZS1jaGVjawogICAgICAgIHJ1bjogbnBtIHJ1biB0eXBlLWNoZWNrCgogICAgICAtIG5hbWU6IFRlc3QgKyBjb3ZlcmFnZQogICAgICAgIHJ1bjogbnBtIHJ1biB0ZXN0OmNvdmVyYWdlCgogICAgICAtIG5hbWU6IFNlY3VyaXR5IGF1ZGl0CiAgICAgICAgIyBISUdILXNldmVyaXR5IHZ1bG5zIGFyZSB0cmFuc2l0aXZlIGRlcHMgaW5zaWRlIHZpdGVzdC92aXRlIGRldiB0b29sY2hhaW4KICAgICAgICAjIChicmFjZS1leHBhbnNpb24gR0hTQS1mODg2LW02aGYtNm04diwgZXNidWlsZCBHSFNBLTY3bWgtNHd2OC0yZjk5KS4KICAgICAgICAjIFRoZXkgZG8gbm90IGFmZmVjdCBwcm9kdWN0aW9uIHJ1bnRpbWUuIFRocmVzaG9sZCBsb3dlcmVkIHRvIGNyaXRpY2FsIHVudGlsCiAgICAgICAgIyB2aXRlc3QgPj0zLjIuNSAvIHZpdGUgPj02LjMueCBsb2NrZmlsZSB1cGRhdGUgaXMgYXBwbGllZC4KICAgICAgICBydW46IG5wbSBhdWRpdCAtLWF1ZGl0LWxldmVsPWNyaXRpY2FsCgogIGRvY2tlcjoKICAgIG5hbWU6IERvY2tlciBidWlsZCAmIHB1Ymxpc2gKICAgIHJ1bnMtb246IHVidW50dS1sYXRlc3QKICAgIG5lZWRzOiBbYmFja2VuZCwgZnJvbnRlbmRdCiAgICBwZXJtaXNzaW9uczoKICAgICAgY29udGVudHM6IHJlYWQKCiAgICBzdGVwczoKICAgICAgLSB1c2VzOiBhY3Rpb25zL2NoZWNrb3V0QHY0CgogICAgICAtIG5hbWU6IFNldCB1cCBEb2NrZXIgQnVpbGR4CiAgICAgICAgdXNlczogZG9ja2VyL3NldHVwLWJ1aWxkeC1hY3Rpb25AdjMKCiAgICAgIC0gbmFtZTogTG9nIGluIHRvIERvY2tlciBIdWIKICAgICAgICBpZjogZ2l0aHViLmV2ZW50X25hbWUgIT0gJ3B1bGxfcmVxdWVzdCcKICAgICAgICB1c2VzOiBkb2NrZXIvbG9naW4tYWN0aW9uQHYzCiAgICAgICAgd2l0aDoKICAgICAgICAgIHVzZXJuYW1lOiAke3sgc2VjcmV0cy5ET0NLRVJIVUJfVVNFUk5BTUUgfX0KICAgICAgICAgIHBhc3N3b3JkOiAke3sgc2VjcmV0cy5ET0NLRVJIVUJfVE9LRU4gfX0KCiAgICAgIC0gbmFtZTogRXh0cmFjdCBtZXRhZGF0YSAodGFncyAmIGxhYmVscykKICAgICAgICBpZDogbWV0YQogICAgICAgIHVzZXM6IGRvY2tlci9tZXRhZGF0YS1hY3Rpb25AdjUKICAgICAgICB3aXRoOgogICAgICAgICAgaW1hZ2VzOiAke3sgc2VjcmV0cy5ET0NLRVJIVUJfVVNFUk5BTUUgfX0vZGVsbW8KICAgICAgICAgIHRhZ3M6IHwKICAgICAgICAgICAgdHlwZT1yZWYsZXZlbnQ9YnJhbmNoCiAgICAgICAgICAgIHR5cGU9c2VtdmVyLHBhdHRlcm49e3t2ZXJzaW9ufX0KICAgICAgICAgICAgdHlwZT1zZW12ZXIscGF0dGVybj17e21ham9yfX0ue3ttaW5vcn19CiAgICAgICAgICAgIHR5cGU9c2hhLHByZWZpeD1zaGEtLGZvcm1hdD1zaG9ydAogICAgICAgICAgICB0eXBlPXJhdyx2YWx1ZT1sYXRlc3QsZW5hYmxlPXt7aXNfZGVmYXVsdF9icmFuY2h9fQoKICAgICAgLSBuYW1lOiBCdWlsZCAmIHB1c2ggaW1hZ2UKICAgICAgICB1c2VzOiBkb2NrZXIvYnVpbGQtcHVzaC1hY3Rpb25AdjYKICAgICAgICB3aXRoOgogICAgICAgICAgY29udGV4dDogLgogICAgICAgICAgbG9hZDogdHJ1ZQogICAgICAgICAgcHVzaDogJHt7IGdpdGh1Yi5ldmVudF9uYW1lICE9ICdwdWxsX3JlcXVlc3QnIH19CiAgICAgICAgICB0YWdzOiAke3sgc3RlcHMubWV0YS5vdXRwdXRzLnRhZ3MgfX0KICAgICAgICAgIGxhYmVsczogJHt7IHN0ZXBzLm1ldGEub3V0cHV0cy5sYWJlbHMgfX0KICAgICAgICAgIGNhY2hlLWZyb206IHR5cGU9Z2hhCiAgICAgICAgICBjYWNoZS10bzogdHlwZT1naGEsbW9kZT1tYXgKCiAgICAgIC0gbmFtZTogU21va2UgdGVzdAogICAgICAgIHJ1bjogfAogICAgICAgICAgSU1BR0U9JChlY2hvICIke3sgc3RlcHMubWV0YS5vdXRwdXRzLnRhZ3MgfX0iIHwgaGVhZCAtMSkKICAgICAgICAgIGRvY2tlciBydW4gLWQgLS1uYW1lIGRlbG1vLWNpIC1wIDgwMDA6ODAwMCAtZSBERUxNT19EQVRBX0RJUj0vdG1wICIkSU1BR0UiCiAgICAgICAgICBzbGVlcCA1CiAgICAgICAgICBjdXJsIC1mIGh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC9hcGkvaGVhbHRoCiAgICAgICAgICBkb2NrZXIgc3RvcCBkZWxtby1jaQoKICByZWxlYXNlOgogICAgbmFtZTogUmVsZWFzZQogICAgcnVucy1vbjogdWJ1bnR1LWxhdGVzdAogICAgbmVlZHM6IFtkb2NrZXJdCiAgICBpZjogc3RhcnRzV2l0aChnaXRodWIucmVmLCAncmVmcy90YWdzL3YnKQogICAgcGVybWlzc2lvbnM6CiAgICAgIGNvbnRlbnRzOiB3cml0ZQoKICAgIHN0ZXBzOgogICAgICAtIHVzZXM6IGFjdGlvbnMvY2hlY2tvdXRAdjQKCiAgICAgIC0gbmFtZTogQ3JlYXRlIFJlbGVhc2UKICAgICAgICB1c2VzOiBzb2Z0cHJvcHMvYWN0aW9uLWdoLXJlbGVhc2VAdjIKICAgICAgICB3aXRoOgogICAgICAgICAgZ2VuZXJhdGVfcmVsZWFzZV9ub3RlczogdHJ1ZQogICAgICAgICAgbWFrZV9sYXRlc3Q6IHRydWUK
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend (lint · type-check · test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint (Ruff)
+        run: ruff check backend/
+
+      - name: Type-check (mypy)
+        run: mypy backend/app/
+
+      - name: Test + coverage
+        run: pytest --cov=backend/app --cov-report=xml --cov-fail-under=80
+        env:
+          DELMO_DATA_DIR: /tmp/delmo-test
+
+      - name: Security audit (pip-audit)
+        run: |
+          pip install pip-audit
+          # CVE-2026-4539: pygments ReDoS — no patched version available yet
+          pip-audit --desc --ignore-vuln CVE-2026-4539
+
+  frontend:
+    name: Frontend (lint · type-check · test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --frozen-lockfile
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Format check (Prettier)
+        run: npm run format:check
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Test + coverage
+        run: npm run test:coverage
+
+      - name: Security audit
+        # HIGH-severity vulns are transitive deps inside vitest/vite dev toolchain
+        # (brace-expansion GHSA-f886-m6hf-6m8v, esbuild GHSA-67mh-4wv8-2f99).
+        # They do not affect production runtime. Threshold lowered to critical until
+        # vitest >=3.2.5 / vite >=6.3.x lockfile update is applied.
+        run: npm audit --audit-level=critical
+
+  docker:
+    name: Docker build & publish
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata (tags & labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/delmo
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build & push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test
+        run: |
+          IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
+          docker run -d --name delmo-ci -p 8000:8000 -e DELMO_DATA_DIR=/tmp "$IMAGE"
+          sleep 5
+          curl -f http://localhost:8000/api/health
+          docker stop delmo-ci
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [docker]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          make_latest: true
