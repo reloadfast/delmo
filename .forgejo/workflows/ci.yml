@@ -128,9 +128,12 @@ jobs:
         run: |
           IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
           docker rm -f delmo-ci 2>/dev/null || true
-          docker run -d --name delmo-ci -p 8000:8000 -e DELMO_DATA_DIR=/tmp "$IMAGE"
+          docker run -d --name delmo-ci -e DELMO_DATA_DIR=/tmp "$IMAGE"
           sleep 5
-          curl -f http://localhost:8000/api/health
+          # In DinD, port mapping publishes to DinD's host — not reachable as localhost
+          # from the job container. Use the container's bridge IP directly instead.
+          IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' delmo-ci)
+          curl -f "http://${IP}:8000/api/health"
           docker stop delmo-ci
 
   release:
