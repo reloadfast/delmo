@@ -427,6 +427,9 @@ python -m pytest --cov=backend/app --cov-fail-under=80 -q --tb=short
 # 5. TypeScript type errors
 (cd frontend && npm run type-check)
 
+# 6. Frontend security audit (mirrors CI gate)
+(cd frontend && npm audit --audit-level=high)
+
 echo "All checks passed — push allowed."
 ```
 
@@ -436,6 +439,7 @@ echo "All checks passed — push allowed."
 - `pytest --cov-fail-under=80` — missing tests on new modules; regression failures
 - `ESLint` — frontend parse errors, unused vars
 - `tsc` — prop type mismatches, JSX tag errors that ESLint doesn't catch
+- `npm audit --audit-level=high` — known CVEs in frontend deps before they reach CI
 
 ---
 
