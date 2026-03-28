@@ -35,6 +35,10 @@ frontend/coverage/
 # Unraid template (internal only)
 unraid/
 
+# Copilot
+.copilot/
+.github/copilot-instructions.md
+
 # IDE
 .idea/
 .vscode/
