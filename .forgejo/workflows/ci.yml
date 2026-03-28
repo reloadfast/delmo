@@ -45,8 +45,11 @@ jobs:
       - name: Security audit (pip-audit)
         run: |
           pip install pip-audit
-          # CVE-2026-4539: pygments ReDoS — no patched version available yet
-          pip-audit --desc --ignore-vuln CVE-2026-4539
+          pip-audit --desc --skip-editable \
+            --ignore-vuln CVE-2026-4539
+          # CVE-2026-4539: ReDoS in pygments AdlLexer — transitive dep of pip-audit
+          # itself (via rich), not used by delmo. Local-access-only. No fix released
+          # as of 2026-03-28; re-evaluate when pygments >2.19.2 ships.
 
   frontend:
     name: Frontend (lint · type-check · test)
