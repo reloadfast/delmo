@@ -125,6 +125,21 @@ Single multi-stage Docker image — no nginx, no second container.
 
 ---
 
+## Security notes
+
+delmo is designed for **LAN-only, single-user** deployment — no authentication layer is included.
+
+- Deluge credentials are stored in SQLite and are never returned by the API or written to logs.
+- Restrict access to the database file so only the container user can read it:
+
+  ```bash
+  chmod 600 ./data/delmo.db
+  ```
+
+- Do not expose port `8000` to the public internet.
+
+---
+
 ## Development
 
 **Requirements:** Python 3.14, Node 22
