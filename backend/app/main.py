@@ -35,11 +35,14 @@ _STATIC_DIR = (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> Any:
-    logger.info("Starting delmo…")
+    print("STARTUP: init_db start", flush=True)
     await init_db()
+    print("STARTUP: seed_defaults start", flush=True)
     await seed_defaults()
+    print("STARTUP: start_scheduler start", flush=True)
     logger.info("Database ready.")
     start_scheduler()
+    print("STARTUP: startup complete -- yielding", flush=True)
     yield
     stop_scheduler()
     logger.info("Shutting down delmo.")
