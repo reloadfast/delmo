@@ -10,15 +10,23 @@ from app.schemas.setting import SettingsPatch, SettingsResponse
 router = APIRouter(tags=["settings"])
 
 
+_REDACTED_KEYS = {"deluge_password"}
+
+
 async def _all_settings(db: AsyncSession) -> dict[str, str]:
     result = await db.execute(select(Setting))
     return {s.key: s.value for s in result.scalars().all()}
 
 
+def _public_settings(settings: dict[str, str]) -> dict[str, str]:
+    """Strip sensitive keys before returning settings to the client."""
+    return {k: v for k, v in settings.items() if k not in _REDACTED_KEYS}
+
+
 @router.get("/settings", response_model=SettingsResponse)
 async def get_settings(db: AsyncSession = Depends(get_db)) -> SettingsResponse:
-    """Return all persisted settings as a flat key→value map."""
-    return SettingsResponse(data=await _all_settings(db))
+    """Return persisted settings as a flat key→value map (sensitive keys omitted)."""
+    return SettingsResponse(data=_public_settings(await _all_settings(db)))
 
 
 @router.patch("/settings", response_model=SettingsResponse)
@@ -45,4 +53,4 @@ async def patch_settings(
         except (ValueError, RuntimeError):
             pass  # Invalid value or scheduler not running — ignore
 
-    return SettingsResponse(data=await _all_settings(db))
+    return SettingsResponse(data=_public_settings(await _all_settings(db)))

@@ -76,8 +76,8 @@ async def init_db() -> None:
         _stamp_if_unversioned(cfg)
         command.upgrade(cfg, "head")
 
-    # Run in a thread: alembic's command.upgrade is synchronous and calls
-    # asyncio.run() internally, which can't be called inside a running loop.
+    # Run in a thread to keep disk I/O off the event loop.
+    # env.py uses a plain sync sqlite:// engine — no asyncio.run() involved.
     await asyncio.to_thread(_upgrade)
 
 

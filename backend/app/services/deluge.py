@@ -10,6 +10,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import socket as _socket
+import ssl
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -17,6 +19,37 @@ from typing import Any
 from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Patch deluge-client SSL context for Python 3.14+ / OpenSSL 3.x compatibility.
+# The library hardcodes AES256-SHA as a fallback cipher, which is disabled in
+# modern OpenSSL. This replaces _create_socket with a version that allows
+# legacy TLS renegotiation without enforcing a specific cipher suite.
+# ---------------------------------------------------------------------------
+def _patched_create_socket(  # type: ignore[no-untyped-def]
+    self, ssl_version=None, ciphers=None
+) -> None:
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    ctx.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0)
+    try:
+        ctx.minimum_version = ssl.TLSVersion.TLSv1
+    except (AttributeError, ssl.SSLError):
+        pass
+    self._socket = ctx.wrap_socket(
+        _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM)
+    )
+    self._socket.settimeout(self.timeout)
+
+
+try:
+    from deluge_client import (
+        DelugeRPCClient as _DelugeRPCClient,
+    )
+    _DelugeRPCClient._create_socket = _patched_create_socket
+except ImportError:
+    pass
 
 # ---------------------------------------------------------------------------
 # Data types
@@ -77,7 +110,7 @@ def _decode_keys(obj: Any) -> Any:
             )
             for k, v in obj.items()
         }
-    if isinstance(obj, (list, tuple)):
+    if isinstance(obj, list | tuple):
         return [_decode_keys(i) for i in obj]
     if isinstance(obj, bytes):
         return obj.decode("utf-8", errors="replace")
