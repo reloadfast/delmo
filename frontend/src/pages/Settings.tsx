@@ -116,12 +116,18 @@ function ConnectionCard({ settings }: { settings: Record<string, string> }) {
     setTestStatus(null);
     setSaved(false);
     try {
-      const result = await connectionApi.test({
-        host: form.host,
-        port: Number(form.port) || 58846,
-        username: form.username,
-        password: form.password,
-      });
+      // When the password field is blank the user hasn't changed it, so the
+      // stored credential is still valid.  Use /status (reads from DB) instead
+      // of /test (requires the full credential in the request body).
+      const result =
+        form.password === ""
+          ? await connectionApi.status()
+          : await connectionApi.test({
+              host: form.host,
+              port: Number(form.port) || 58846,
+              username: form.username,
+              password: form.password,
+            });
       setTestStatus(result);
       if (result.connected) {
         saveMutation.mutate();
