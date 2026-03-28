@@ -45,9 +45,9 @@ def _patched_create_socket(  # type: ignore[no-untyped-def]
 
 try:
     from deluge_client import (
-        DelugeRPCClient as _DelugeRPCClient,  # type: ignore[import-untyped]
+        DelugeRPCClient as _DelugeRPCClient,
     )
-    _DelugeRPCClient._create_socket = _patched_create_socket  # type: ignore[method-assign]
+    _DelugeRPCClient._create_socket = _patched_create_socket
 except ImportError:
     pass
 
