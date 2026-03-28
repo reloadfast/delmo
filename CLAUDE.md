@@ -175,7 +175,7 @@ The Unraid Community Applications template lives at `unraid/delmo.xml` (gitignor
 - Fail CI on HIGH severity static analysis findings (Ruff, mypy strict, ESLint)
 - Fail CI on known CVEs in dependencies (pip-audit, npm audit)
 - No hardcoded credentials anywhere in the codebase
-- Nginx security headers: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`
+- HTTP security headers via FastAPI middleware: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`
 - Never log Deluge passwords; mask in all log output
 
 ---
@@ -198,6 +198,13 @@ The application version must always be readable in the UI to aid troubleshooting
 - Format: `v` prefix + semver string (e.g., `v0.2.0`)
 
 **Accessibility:** contrast ratio ≥ 4.5:1 against its background (WCAG AA minimum).
+
+**Acceptance criteria — every PR and release must satisfy all of the following before merge:**
+- [ ] Version string bumped in the canonical manifest (`pyproject.toml` + `frontend/package.json`) following semver
+- [ ] Version renders correctly in the UI at the designated placement (manually verified)
+- [ ] No version string is hardcoded anywhere outside the canonical manifests
+- [ ] `CHANGELOG.md` entry written for the new version ([Keep a Changelog](https://keepachangelog.com) format: `## [x.y.z] – YYYY-MM-DD` with Added / Changed / Fixed / Removed sub-sections)
+- [ ] Git tag `vx.y.z` created and pushed after the release PR merges
 
 ---
 
@@ -226,18 +233,209 @@ git commit -m "chore: bump version to 0.3.0"
 git tag v0.3.0
 ```
 
-Every PR that ships user-visible features or meaningful bug fixes **must** include a version bump commit. Purely internal chores (CI tweaks, tests, docs) may skip the bump.
+Every PR that ships user-visible features or meaningful bug fixes **must** include a version bump commit and a `CHANGELOG.md` entry. Purely internal chores (CI tweaks, tests, docs) may skip the bump.
 
 ---
 
 ## Git Conventions
-- Branch prefixes: `feature/`, `fix/`, `chore/`, `docs/`
-- Commits: conventional commits (`feat:`, `fix:`, `chore:`, `test:`, `docs:`)
+- Branch prefixes: `feature/`, `fix/`, `chore/`, `docs/`, `release/`
+- Commits: conventional commits (`feat:`, `fix:`, `chore:`, `test:`, `docs:`, `release:`)
 - PRs require CI green before merge
 - main branch = deployable state at all times
-- When creating GitHub issues, always add them to the project roadmap if one exists (`gh issue edit <n> --add-project "delmo"` or `gh issue create --add-project "delmo"`)
-- When merging a PR, close all issues it resolves (`gh issue close <n> --comment "Implemented in #<PR>."`)
+- Version bump + CHANGELOG entry are **required acceptance criteria** for any release PR (see Version Visibility)
+- When creating Forgejo issues, reference them in commits by ID
+- When merging a PR, close all issues it resolves
 - If issues were auto-closed by the PR merge, verify and skip redundant close commands
+- **Never push to a branch after its PR is open** — if the PR merges while you're still committing, those commits land on the branch but never reach `main`. Always `git fetch origin && git log origin/main` before pushing follow-up fixes. If the PR is already merged, create a new branch from `origin/main`, cherry-pick the commit(s), and open a new PR.
+
+**Remote (Forgejo):**
+- `origin` → `forgejo:Wind/delmo.git` — uses the `forgejo` SSH alias defined in `~/.ssh/config` (resolves to `192.168.1.110:1022`)
+- Always use the alias form — never the raw `ssh://git@192.168.1.110:1022/` URL
+- Standard operations: `git push origin main`, `git fetch origin`, `git pull origin main`
+
+**GitHub remote (`github`) — deprecated for delmo:**
+- GitHub is no longer used for delmo; `github` remote may still be configured locally but must never be pushed to automatically or as part of any PR/CI workflow
+- Only push to `github` when the user **explicitly asks** for it; never include it in branch push steps or CI automation
+- All PRs target Forgejo (`origin`) only
+
+**Forgejo API / issue management:**
+- Use `mcp__forgejo__*` MCP tools — they authenticate via the configured Forgejo token automatically; no manual curl needed for issue/PR/repo operations
+
+---
+
+## Forgejo Docker Registry
+
+The registry is served over HTTPS via Traefik at `forgejo.moseisley.es` — standard `docker/login-action` works fine.
+
+**Login:**
+```yaml
+- name: Log in to Forgejo registry
+  uses: docker/login-action@v3
+  with:
+    registry: forgejo.moseisley.es
+    username: ${{ github.actor }}
+    password: ${{ secrets.FORGEJO_TOKEN }}
+```
+
+**Image name:** `forgejo.moseisley.es/wind/delmo`
+
+**Tags — use explicit ref, not template (`enable={{is_default_branch}}` does not resolve in Forgejo Actions):**
+```yaml
+- name: Generate Docker image tags
+  id: meta
+  uses: docker/metadata-action@v5
+  with:
+    images: forgejo.moseisley.es/wind/delmo
+    tags: |
+      type=raw,value=main,enable=${{ github.ref == 'refs/heads/main' }}
+      type=sha,prefix=sha-,format=short
+      type=semver,pattern={{version}}
+      type=raw,value=latest
+```
+
+**`GITHUB_TOKEN` does NOT have package registry write access in Forgejo Actions** — use a Forgejo PAT with `package` scope stored as repo secret `FORGEJO_TOKEN`.
+
+**Forgejo Actions API — broken methods (all return 404 on current Forgejo version):**
+- `list_runs`, `list_jobs`, `list_workflows`, `get_job_log_preview` via MCP — do NOT attempt; they waste tool calls
+
+**Working approach to inspect CI:**
+1. Check runner logs: `ssh root@192.168.1.110 "docker logs forgejo-runner 2>&1 | tail -50"`
+2. Check task status via Forgejo API:
+   ```bash
+   curl -s "https://forgejo.moseisley.es/api/v1/repos/Wind/delmo/actions/tasks" \
+     -H "Authorization: Bearer $TOKEN"
+   ```
+3. Check registry packages:
+   ```bash
+   curl -s "https://forgejo.moseisley.es/api/v1/packages/Wind?type=container&limit=20" \
+     -H "Authorization: Bearer $TOKEN"
+   ```
+
+**Generating a temporary scoped token when none is available:**
+```bash
+ssh root@192.168.1.110 "docker exec -u git Forgejo forgejo admin user generate-access-token \
+  --username Wind --token-name debug-tmp --raw --scopes read:repository,read:package"
+```
+- Container name is `Forgejo` (capital F) — not `forgejo`; must use `-u git`
+- Delete temporary tokens after use via Forgejo UI → Settings → Applications
+
+---
+
+## Backlog / Roadmap Conventions
+- All backlog, roadmap, and milestone tracking files must use codified IDs for every item (e.g. `SEC-001`, `BUG-003`, `UX-011`)
+- ID format: `<CATEGORY>-<NNN>` — category is uppercase, number is zero-padded to 3 digits
+- IDs must never be reused or renumbered once assigned; retired items stay in the file marked `[DONE]` or `[DROPPED]`
+- When referencing a backlog item in a commit message, PR, or comment, always use its ID (e.g. "fixes BUG-001")
+- New items are appended at the bottom of their category table; do not insert mid-table to avoid ID churn
+- Backlog files are gitignored — they are local working documents, not public artefacts
+
+---
+
+## GitHub Actions / CI Efficiency
+
+**Structure rules — one workflow file, jobs grouped by language:**
+- Fold lint + test + security audit into a single job per language (e.g. `backend`, `frontend`)
+  — do NOT create a separate `security.yml`; bake pip-audit/npm-audit into the CI jobs
+- Docker build/push only on `push` to `main` or tags — never on PRs alone
+- Secret scanning may be its own lightweight job but stays in the same workflow file
+
+**Every workflow must include a concurrency block to cancel stale runs:**
+```yaml
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+**Always cache package managers:**
+- Python: `cache: pip` in `actions/setup-python` (already in CI)
+- Node: `cache: npm` + `cache-dependency-path: frontend/package-lock.json` in `actions/setup-node` (already in CI)
+
+**Target job count:** ≤ 4 jobs per workflow trigger (backend, frontend, docker, release).
+
+**Self-hosted runner disk hygiene — prune dangling images after every successful push:**
+```yaml
+- name: Prune dangling images
+  if: success()
+  run: docker image prune -f
+```
+- `docker image prune -f` removes **dangling images only** (untagged layers) — build cache is untouched
+- Never use `docker builder prune -f` (destroys build cache) or `docker system prune -f` (removes volumes)
+
+**`docker/metadata-action` tag generation — `enable={{is_default_branch}}` does NOT resolve in Forgejo Actions:**
+- It produces empty tags, causing buildx to fail with `tag is needed when pushing to registry`
+- Always use the explicit form:
+```yaml
+tags: |
+  type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+  type=semver,pattern={{version}}
+  type=semver,pattern={{major}}.{{minor}}
+  type=sha,prefix=sha-,format=short
+```
+- The current `ci.yml` was updated to use `forgejo.moseisley.es/wind/delmo` with the explicit form.
+
+**CI workflow path hygiene:**
+When deleting a module or directory, immediately update all CI workflow references to it (`ruff check`, `--cov=`, etc.). Stale paths cause CI to fail even though the deletion was correct.
+
+---
+
+## Docker Best Practices
+
+**HEALTHCHECK — use `curl`, never `python3` (or other heavy interpreters):**
+- Spawning a full interpreter every 30 s causes constant CPU spikes — each spawn costs 50–100 ms of startup
+- Use `curl` instead: starts in ~5 ms and exits cleanly
+- Install curl in the same `RUN` layer as other OS packages
+- Use ENV vars for the port so the check stays in sync automatically:
+  ```dockerfile
+  HEALTHCHECK --interval=60s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl -sf http://localhost:${APP_PORT}/api/health > /dev/null || exit 1
+  ```
+- Set interval to **60 s or longer** for self-hosted containers — 30 s is unnecessarily aggressive for low-traffic services
+- Mirror the same settings in `docker-compose.yml` so local dev matches production behaviour
+
+---
+
+## Local Pre-Push Checks
+
+CI failures are expensive to fix once a PR is open. Mirror all CI gates locally so they fail fast before the push.
+
+**Install the hook once per clone:**
+```bash
+git config core.hooksPath .githooks
+```
+
+**`.githooks/pre-push`** (commit this file; make it executable with `chmod +x .githooks/pre-push`):
+```bash
+#!/usr/bin/env bash
+# Pre-push hook — mirrors CI checks so failures are caught locally.
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# 1. Python lint (ruff)
+python -m ruff check backend/
+
+# 2. Python type-check (mypy)
+python -m mypy backend/app/
+
+# 3. Python tests + coverage gate
+python -m pytest --cov=backend/app --cov-fail-under=80 -q --tb=short
+
+# 4. Frontend lint (ESLint)
+(cd frontend && npm run lint --silent)
+
+# 5. TypeScript type errors
+(cd frontend && npm run type-check)
+
+echo "All checks passed — push allowed."
+```
+
+**What each check catches:**
+- `ruff` — import sorting, line length, common Python anti-patterns
+- `mypy` — type errors, missing annotations
+- `pytest --cov-fail-under=80` — missing tests on new modules; regression failures
+- `ESLint` — frontend parse errors, unused vars
+- `tsc` — prop type mismatches, JSX tag errors that ESLint doesn't catch
 
 ---
 

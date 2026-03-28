@@ -7,6 +7,10 @@ on:
     tags: ["v*.*.*"]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backend:
     name: Backend (lint · type-check · test)
@@ -22,6 +26,7 @@ jobs:
         with:
           python-version: "3.14"
           cache: pip
+          cache-dependency-path: pyproject.toml
 
       - name: Install dependencies
         run: pip install -e ".[dev]"
@@ -94,24 +99,25 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Docker Hub
+      - name: Log in to Forgejo registry
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: forgejo.moseisley.es
+          username: ${{ github.actor }}
+          password: ${{ secrets.FORGEJO_TOKEN }}
 
       - name: Extract metadata (tags & labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/delmo
+          images: forgejo.moseisley.es/wind/delmo
           tags: |
-            type=ref,event=branch
+            type=raw,value=main,enable=${{ github.ref == 'refs/heads/main' }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix=sha-,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build & push image
         uses: docker/build-push-action@v6
@@ -136,6 +142,10 @@ jobs:
           curl -f "http://${IP}:8000/api/health"
           docker stop delmo-ci
 
+      - name: Prune dangling images
+        if: success()
+        run: docker image prune -f
+
   release:
     name: Release
     runs-on: ubuntu-latest
@@ -147,8 +157,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          make_latest: true
+      - name: Create Forgejo release
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          curl -sf -X POST "https://forgejo.moseisley.es/api/v1/repos/Wind/delmo/releases" \
+            -H "Authorization: Bearer ${{ secrets.FORGEJO_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"tag_name\": \"$TAG\",
+              \"name\": \"$TAG\",
+              \"body\": \"Release $TAG\",
+              \"draft\": false,
+              \"prerelease\": false
+            }"
