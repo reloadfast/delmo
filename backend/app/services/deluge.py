@@ -44,7 +44,9 @@ def _patched_create_socket(  # type: ignore[no-untyped-def]
 
 
 try:
-    from deluge_client import DelugeRPCClient as _DelugeRPCClient  # type: ignore[import-untyped]
+    from deluge_client import (
+        DelugeRPCClient as _DelugeRPCClient,  # type: ignore[import-untyped]
+    )
     _DelugeRPCClient._create_socket = _patched_create_socket  # type: ignore[method-assign]
 except ImportError:
     pass
@@ -108,7 +110,7 @@ def _decode_keys(obj: Any) -> Any:
             )
             for k, v in obj.items()
         }
-    if isinstance(obj, (list, tuple)):
+    if isinstance(obj, list | tuple):
         return [_decode_keys(i) for i in obj]
     if isinstance(obj, bytes):
         return obj.decode("utf-8", errors="replace")
