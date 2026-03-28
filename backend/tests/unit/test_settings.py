@@ -62,6 +62,25 @@ async def test_patch_settings_rejects_empty_key(client: AsyncClient) -> None:
     assert resp.status_code == 422
 
 
+async def test_password_redacted_from_get(client: AsyncClient) -> None:
+    """deluge_password must never appear in GET /api/settings response."""
+    await client.patch(
+        "/api/settings", json={"updates": {"deluge_password": "s3cr3t"}}
+    )
+    resp = await client.get("/api/settings")
+    assert resp.status_code == 200
+    assert "deluge_password" not in resp.json()["data"]
+
+
+async def test_password_redacted_from_patch_response(client: AsyncClient) -> None:
+    """deluge_password must not be echoed back in PATCH /api/settings response."""
+    resp = await client.patch(
+        "/api/settings", json={"updates": {"deluge_password": "s3cr3t"}}
+    )
+    assert resp.status_code == 200
+    assert "deluge_password" not in resp.json()["data"]
+
+
 async def test_health(client: AsyncClient) -> None:
     resp = await client.get("/api/health")
     assert resp.status_code == 200
