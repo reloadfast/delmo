@@ -392,6 +392,25 @@ When deleting a module or directory, immediately update all CI workflow referenc
 - Set interval to **60 s or longer** for self-hosted containers — 30 s is unnecessarily aggressive for low-traffic services
 - Mirror the same settings in `docker-compose.yml` so local dev matches production behaviour
 
+**CI smoke tests — the Forgejo runner is Docker-in-Docker (DinD):**
+- Each job runs inside a container. `docker run -p HOST:CONTAINER` binds the port on the **Docker daemon host**, not on `localhost` inside the job container — `curl http://localhost:PORT` will always get "connection refused" even when the container is healthy.
+- **Never use `-p` + `curl localhost` for smoke tests on this runner.**
+- Use `docker exec <name> curl -sf http://localhost:PORT/api/health` instead — curl runs inside the app container where its own `localhost` is always reachable:
+  ```yaml
+  - name: Smoke test
+    run: |
+      IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -1)
+      docker rm -f delmo-ci 2>/dev/null || true
+      docker run -d --rm --name delmo-ci -e DELMO_DATA_DIR=/tmp "$IMAGE"
+      for i in $(seq 1 30); do
+        docker exec delmo-ci curl -sf http://localhost:8000/api/health \
+          2>/dev/null && echo "Health OK" && break
+        [ "$i" -eq 30 ] && { docker logs delmo-ci; docker stop delmo-ci; exit 1; }
+        sleep 1
+      done
+      docker stop delmo-ci
+  ```
+
 ---
 
 ## Local Pre-Push Checks
